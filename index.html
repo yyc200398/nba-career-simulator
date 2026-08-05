@@ -301,7 +301,7 @@ if(GS.spinRound<=TOTAL_SPINS){
 }
 }
 
-function startSpinning(){if(!GS.chosenPos)return;GS=freshGS();GS.chosenPos=GS.chosenPos;GS.playerPos=GS.chosenPos;GS.spinRound=1;GS.spinPhase='player';document.getElementById('spin-result').innerHTML='';document.getElementById('drawn-grid').innerHTML='';document.getElementById('locked-player-info').innerHTML='';document.getElementById('btn-spin').style.display='';document.getElementById('btn-finish').style.display='none';document.getElementById('btn-spin').disabled=false;updateSpinUI();showScreen('screen-spin');}
+function startSpinning(){if(!GS.chosenPos)return;const pos=GS.chosenPos;GS=freshGS();GS.chosenPos=pos;GS.playerPos=pos;GS.spinRound=1;GS.spinPhase='player';document.getElementById('spin-result').innerHTML='';document.getElementById('drawn-grid').innerHTML='';document.getElementById('locked-player-info').innerHTML='';document.getElementById('btn-spin').style.display='';document.getElementById('btn-finish').style.display='none';document.getElementById('btn-spin').disabled=false;updateSpinUI();showScreen('screen-spin');}
 
 function updateSpinUI(){
 let rd='';for(let i=1;i<=TOTAL_SPINS;i++){let c='';if(i<GS.spinRound||(i===GS.spinRound&&GS.spinPhase==='done'))c='done';else if(i===GS.spinRound)c='current';rd+=`<div class="round-dot ${c}">${i}</div>`;if(i<TOTAL_SPINS)rd+='<div class="round-arrow">›</div>';}
