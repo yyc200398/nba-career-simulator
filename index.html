@@ -479,7 +479,16 @@ function genBox(a,ovr,opp,win){
 	// ==================== 得分 ====================
 	const rawPts=twoPM*2+threePM*3+ftm;
 	const ptsCap=clp(Math.round(scorSkill*38+shootWilling*10),4,50);
-	const pts=Math.min(rawPts,ptsCap);
+	let pts;
+	// 小概率突破上限：爆发之夜（约8%概率，属性和倾向越高概率越大）
+	const burstChance=clp(scorSkill*.12+shootWilling*.05,.03,.18);
+	if(Math.random()<burstChance){
+	  // 突破幅度：5%~25%超过上限
+	  const burst=1+Math.random()*.25+scorSkill*.15;
+	  pts=Math.min(60,Math.round(rawPts*burst));
+	}else{
+	  pts=Math.min(rawPts,ptsCap);
+	}
 	// ==================== 出场时间 ====================
 	const baseMin=18+Math.round(ovr/7);
 	const min=Math.round(clp(rng(baseMin-4,baseMin+6)*roleM.min,6,40));
