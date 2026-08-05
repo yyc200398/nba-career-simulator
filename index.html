@@ -442,26 +442,48 @@ function streakBonus(){if(GS.seasonGames.length<3)return 0;const l=GS.seasonGame
 function hotColdFactor(){if(GS.seasonGames.length<3)return 1;const l=GS.seasonGames.slice(-3).filter(g=>!g.injured),ap=l.length?l.reduce((s,g)=>s+g.pts,0)/l.length:15;if(ap>32)return 1.25;if(ap>22)return 1.08;if(ap<10)return.7;if(ap<15)return.88;return 1;}
 
 function genBox(a,ovr,opp,win){
-refreshRole();const roleM=getRoleMultiplier();const tend=GS.playerTend||{},pf=(GS.curTeam.pace+opp.pace)/2/85;
-const shA=(tend.shotTendency||50)/50,usage=clp(.35+.4*shA*(ovr/80),.25,1.6);
-const baseFGA=Math.round(clp(rng(6,15)*usage*pf*roleM.fga,2,24));
-// Player differentiation: stronger shooters/scorers get more points
-const rawFG=clp(.40+(a.midRange+a.closeShot)*.0028,.30,.65);
-const ctP=Math.max(0.7,(tend.contestedShotTend||50)/70);
-const fgSkill=a.shotIQ/99; // How good the player is at shot selection
-const scorDiff=(a.closeShot+a.drivingLayup+a.midRange+a.threePoint)/4; // Pure scoring ability
-const scorBonus=(scorDiff/99)*.15+(ovr/99)*.10;
-const fgm=Math.round(clp(baseFGA*(rawFG*(.7+.2*ctP+.2*fgSkill+scorBonus)),1,baseFGA-1)),fga=baseFGA;
-const tpPct=Math.max(.05,Math.min(.62,(tend.threePointTend||35)/100));
-const threePA=Math.round(Math.min(fga, fga*tpPct*(.5+.5*a.threePoint/99)*(.6+Math.random()*.4)));
-const tpR=Math.min(.50,a.threePoint/200+.1);
-const threePM=Math.round(Math.min(threePA, threePA*tpR));
-const twoPA=fga-threePA,twoPM=fgm-threePM;
-const fdRate=(tend.foulDrawingTend||50)/60,fta=Math.round(fgm*clp(fdRate*.22,.02,.50));
-const ftm=Math.round(fta*(a.freeThrow/100));
-const pts=Math.min(35+Math.round(ovr/6), twoPM*2+threePM*3+ftm);
-const baseMin=22+Math.round(ovr/8),min=Math.round(clp(rng(baseMin-4,baseMin+6)*roleM.min,6,40));
-const hf=hotColdFactor();
+	refreshRole();const roleM=getRoleMultiplier();const tend=GS.playerTend||{},pf=(GS.curTeam.pace+opp.pace)/2/85;
+	// ==================== 出手数 ====================
+	const scorSkill=(a.threePoint*0.08+a.midRange*0.10+a.closeShot*0.08+a.drivingLayup*0.07+a.shotIQ*0.06+a.offConsistency*0.04)/99;
+	const shotTend=(tend.shotTendency||50)/50;
+	const midTend=(tend.midRangeTend||50)/50;
+	const threeTend=(tend.threePointTend||50)/50;
+	const driveTend=(tend.driveTendency||50)/50;
+	const shootWilling=shotTend*.35+midTend*.15+threeTend*.20+driveTend*.15;
+	const fgaBase=scorSkill*.42+shootWilling*.28;
+	const fgaR=clp(fgaBase,.06,.62)+Math.random()*.10;
+	const rawFga=Math.round(clp(fgaR*38*pf*roleM.fga,2,26));
+	const fgaCap=clp(Math.round(scorSkill*30+shootWilling*8),2,26);
+	const fga=Math.min(rawFga,fgaCap);
+	// ==================== 命中率 ====================
+	const shotQuality=(a.midRange*0.08+a.threePoint*0.06+a.closeShot*0.06+a.shotIQ*0.06+a.offConsistency*0.03)/99;
+	const contestedFactor=Math.max(0.6,(tend.contestedShotTend||50)/70);
+	const fgBase=shotQuality*.55+(1-contestedFactor)*.08+.15;
+	const fgPct=clp(fgBase,.25,.65)+Math.random()*.06;
+	const fgMax=Math.min(.65,shotQuality*.85+.18);
+	const fgm=Math.round(clp(Math.min(fga*fgPct, fga*fgMax),1,fga-1));
+	// ==================== 三分 ====================
+	const threeSkill=(a.threePoint*0.14+a.catchShoot*0.04+a.offDribbleShot*0.03+a.shotIQ*0.03)/99;
+	const threeWilling=(tend.threePointTend||35)/100;
+	const threePAR=clp(threeWilling*.55+threeSkill*.20,.02,.65)+Math.random()*.08;
+	const threePA=Math.round(Math.min(fga, fga*threePAR));
+	const threePct=clp(a.threePoint/190+.08,.08,.48);
+	const threePM=Math.round(Math.min(threePA, threePA*threePct));
+	const twoPM=fgm-threePM;
+	// ==================== 罚球 ====================
+	const foulSkill=(a.drawFoul*0.08+a.drivingLayup*0.05+a.strength*0.03)/99;
+	const foulTend=(tend.foulDrawingTend||50)/50;
+	const ftR=clp(foulSkill*.40+foulTend*.15,.01,.45)+Math.random()*.05;
+	const fta=Math.round(fgm*clp(ftR,.02,.55));
+	const ftm=Math.round(fta*(a.freeThrow/100));
+	// ==================== 得分 ====================
+	const rawPts=twoPM*2+threePM*3+ftm;
+	const ptsCap=clp(Math.round(scorSkill*38+shootWilling*10),4,50);
+	const pts=Math.min(rawPts,ptsCap);
+	// ==================== 出场时间 ====================
+	const baseMin=18+Math.round(ovr/7);
+	const min=Math.round(clp(rng(baseMin-4,baseMin+6)*roleM.min,6,40));
+	const hf=hotColdFactor();
 	// ==================== 篮板 ====================
 	const rebSkill=(a.defRebound*0.10+a.offRebound*0.06+a.strength*0.025+a.vertical*0.015+a.hustle*0.02)/99;
 	const rebTend=(tend.offensiveReboundTend||50)/50;
