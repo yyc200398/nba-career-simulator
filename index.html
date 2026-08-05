@@ -399,7 +399,7 @@ if(GS.spinRound>TOTAL_SPINS){GS.spinPhase='done';btn.style.display='none';startT
 
 function finishSpinning(){if(GS.drawnCats.length===0){showScreen('screen-start');return;}
 const fa={};ALL_ATTRS.forEach(k=>{fa[k]=rng(40,55);});
-GS.drawnCats.forEach(dc=>{Object.entries(dc.attrs).forEach(([k,v])=>{fa[k]=Math.min(99,Math.round(v*.95));});});
+GS.drawnCats.forEach(dc=>{Object.entries(dc.attrs).forEach(([k,v])=>{if(k==='potential'){fa[k]=Math.min(99,Math.max(25,v+rng(-3,3)));}else{fa[k]=Math.min(99,Math.round(v*.95));}});});
 GS.baseAttrs={...fa};GS.curAttrs={...fa};GS.curOVR=calcOVR(fa,GS.playerPos);
 const ft={};ALL_TEND_KEYS.forEach(k=>{ft[k]=rng(35,65);});
 GS.drawnTends.forEach(dt=>{Object.entries(dt.attrs).forEach(([k,v])=>{ft[k]=Math.min(99,Math.round(v*.95));});});
