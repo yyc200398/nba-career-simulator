@@ -243,8 +243,32 @@ function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function clp(v,l,h){return Math.max(l,Math.min(h,v))}
 function posEmoji(p){return{PG:'🏃',SG:'🎯',SF:'🛡️',PF:'💪',C:'🏔️'}[p]||''}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
-function freshGS(){return{chosenPos:'',spinRound:0,spinPhase:'player',lockedPlayer:null,drawnCats:[],drawnCatKeys:new Set(),tendSpinRound:0,tendSpinPhase:'player',tendLockedPlayer:null,drawnTends:[],drawnTendKeys:new Set(),playerTend:null,playerName:'',playerPos:'',baseAttrs:null,curAttrs:null,curOVR:0,curAge:19,curTeam:null,contractYears:3,curSeason:0,seasonGames:[],seasonW:0,seasonL:0,othRecords:{},inPO:false,poRound:0,poType:'',poOpp:null,poSeries:[],poW:0,poOppW:0,poResults:[],poDone:false,lastStats:null,career:[],retired:false,trainingDone:false,contractOffers:[],injLeft:0,nextOpp:null,nextHome:false,playInStage:1,playInSeed:0,playInOppSeed:0,playInSorted:null,poMySeed:0,poConfTop8:null,rerolls:3,selectedTeam:null};}
-let GS=freshGS();
+// GAME STATE - direct object (no more freshGS bugs)
+var GS = {
+  chosenPos:'', playerPos:'', playerName:'', curAge:19, curTeam:null, selectedTeam:null,
+  baseAttrs:null, curAttrs:null, curOVR:0, playerTend:null,
+  spinRound:0, spinPhase:'player', lockedPlayer:null, drawnCats:[], drawnCatKeys:new Set(),
+  tendSpinRound:0, tendSpinPhase:'player', tendLockedPlayer:null, drawnTends:[], drawnTendKeys:new Set(),
+  curSeason:0, seasonGames:[], seasonW:0, seasonL:0, othRecords:{},
+  inPO:false, poRound:0, poType:'', poOpp:null, poSeries:[], poW:0, poOppW:0, poResults:[], poDone:false,
+  career:[], retired:false, trainingDone:false, contractYears:0, contractOffers:[],
+  injLeft:0, nextOpp:null, nextHome:false, rerolls:3, playerRole:'',
+  playInStage:1, playInSeed:0, playInOppSeed:0, playInSorted:null, poMySeed:0, poConfTop8:null
+};
+
+function freshGS() {
+  return {
+    chosenPos:'', playerPos:'', playerName:'', curAge:19, curTeam:null, selectedTeam:null,
+    baseAttrs:null, curAttrs:null, curOVR:0, playerTend:null,
+    spinRound:0, spinPhase:'player', lockedPlayer:null, drawnCats:[], drawnCatKeys:new Set(),
+    tendSpinRound:0, tendSpinPhase:'player', tendLockedPlayer:null, drawnTends:[], drawnTendKeys:new Set(),
+    curSeason:0, seasonGames:[], seasonW:0, seasonL:0, othRecords:{},
+    inPO:false, poRound:0, poType:'', poOpp:null, poSeries:[], poW:0, poOppW:0, poResults:[], poDone:false,
+    career:[], retired:false, trainingDone:false, contractYears:0, contractOffers:[],
+    injLeft:0, nextOpp:null, nextHome:false, rerolls:3, playerRole:'',
+    playInStage:1, playInSeed:0, playInOppSeed:0, playInSorted:null, poMySeed:0, poConfTop8:null
+  };
+}
 
 function pickPosition(pos,el){document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');GS.chosenPos=pos;GS.playerPos=pos;document.getElementById('pos-confirm').style.display='';document.getElementById('pos-confirm').innerHTML=`<div style=\"color:var(--gld);font-weight:700;margin:8px 0;\">已选择：${posEmoji(pos)} ${pos}</div><button class=\"btn btn-gold btn-sm\" onclick=\"startSpinning()\">确认位置，开始抽属性</button>`;}
 function restartGame(){GS=freshGS();document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));document.getElementById('pos-confirm').style.display='none';showScreen('screen-start');}
