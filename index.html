@@ -591,7 +591,7 @@ function genBox(a,ovr,opp,win){
 	const tov=rng(tovMin,tovMax);
 	return{pts,reb,ast,stl,blk,tov,min,fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,ft:fta>0?Math.round(ftm/fta*100):75,fga,fgm,threePA,threePM,fta,ftm};}
 
-function genInjuryfunction genInjury(age){const mi=[{text:'🤕 轻微脚踝扭伤（缺2场）',gms:2},{text:'🤕 手指挫伤（缺3场）',gms:3},{text:'🤕 背部痉挛（缺4场）',gms:4}];const ma=[{text:'🏥 脚踝二级扭伤（缺15场）',gms:15},{text:'🏥 腿筋拉伤（缺18场）',gms:18},{text:'🏥 膝盖扭伤（缺22场）',gms:22}];if(age>33&&Math.random()<.25)return pick(ma);if(Math.random()<.08)return pick(ma);return pick(mi);}
+function genInjury(age){const mi=[{text:'🤕 轻微脚踝扭伤（缺2场）',gms:2},{text:'🤕 手指挫伤（缺3场）',gms:3},{text:'🤕 背部痉挛（缺4场）',gms:4}];const ma=[{text:'🏥 脚踝二级扭伤（缺15场）',gms:15},{text:'🏥 腿筋拉伤（缺18场）',gms:18},{text:'🏥 膝盖扭伤（缺22场）',gms:22}];if(age>33&&Math.random()<.25)return pick(ma);if(Math.random()<.08)return pick(ma);return pick(mi);}
 
 function endRegSeason(){
 document.getElementById('rs-card').style.display='none';document.getElementById('btn-nxt').style.display='none';document.getElementById('btn-5').style.display='none';document.getElementById('btn-20').style.display='none';document.getElementById('btn-rest').style.display='none';
