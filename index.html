@@ -468,12 +468,18 @@ const hf=hotColdFactor();
 	const rebTend=(tend.offensiveReboundTend||50)/50;
 	const rebR=clp(defRebSkill+offRebSkill*rebTend*.4,.06,.45)+Math.random()*.12;
 	const reb=Math.round(clp(rebR*40*pf*hf,0,22));
-	// === 助攻：传球精度+传球视野+传球智商+控球+持球速度+倾向 ===
-	const passSkill=(a.passAccuracy*0.12+a.passVision*0.08+a.passIQ*0.06+a.ballHandle*0.04+a.speedWithBall*0.03)/99;
+	// === 助攻：传球能力(60%)+传球倾向(40%)，高传控才能高助攻 ===
+	const passSkill=(a.passAccuracy*0.15+a.passVision*0.10+a.passIQ*0.08+a.ballHandle*0.05+a.speedWithBall*0.03)/99;
 	const passTend=(tend.dimerTendency2||50)/50;
 	const driveKick=(tend.driveAndKickTend||50)/50;
-	const astR=clp(passSkill*.35+passTend*.15+driveKick*.08,.03,.55)+Math.random()*.10;
-	const ast=Math.round(clp(astR*40*pf*roleM.ast*hf,0,16));
+	// 助攻基础率：传球能力×0.55 + 传球倾向×0.25 + 突破分球倾向×0.10
+	const astBase=passSkill*.55+passTend*.25+driveKick*.10;
+	// 数值和倾向都低时，基础应该很低
+	const astR=clp(astBase,.015,.58)+Math.random()*.06;
+	const rawAst=Math.round(clp(astR*38*pf*roleM.ast*hf,0,16));
+	// 最终上限严格受传球能力约束
+	const astCap=clp(Math.round(passSkill*18+passTend*6),0,16);
+	const ast=Math.min(rawAst,astCap);
 	// === 抢断：抢断+外线防守+横移+敏捷+速度+倾向 ===
 	const stlSkill=(a.steal*0.15+a.perimeterDef*0.08+a.lateralQuickness*0.04+a.agility*0.03+a.speed*0.02)/99;
 	const stlTend=(tend.stealTendency||50)/50;
