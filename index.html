@@ -627,7 +627,7 @@ if(checkRetire(age,GS.curOVR)){document.getElementById('btn-ns').style.display='
 
 function determineAwards(avg,poRes){const aw=[],ovr=GS.curOVR,tw=GS.seasonW,tl=GS.seasonL;
 const mvpScore=avg.pts*1.2+avg.reb*0.8+avg.ast*1.0+avg.stl*2.0+avg.blk*1.5+tw*0.3+ovr*0.4;
-const isMVP=ovr>=85&&tw>=45&&avg.pts>=22&&mvpScore>=120&&Math.random()<clp(.10+(mvpScore-120)*.008,.04,.35);
+const isMVP=ovr>=85&&tw>=45&&avg.pts>=22&&mvpScore>=100&&Math.random()<clp(.10+(mvpScore-100)*.005,.05,.60);
 if(isMVP)aw.push('MVP');
 if(GS.curSeason===1&&ovr>=70&&avg.pts>=10&&Math.random()<.7)aw.push('ROTY');
 const isAS=avg.pts>=18&&ovr>=82&&Math.random()<.55;
