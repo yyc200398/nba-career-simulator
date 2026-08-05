@@ -495,6 +495,8 @@ function hotColdFactor(){if(GS.seasonGames.length<3)return 1;const l=GS.seasonGa
 
 function genBox(a,ovr,opp,win){
 	refreshRole();const roleM=getRoleMultiplier();const tend=GS.playerTend||{},pf=(GS.curTeam.pace+opp.pace)/2/85;
+	// 大波动因子：每场比赛随机±30%，模拟真实比赛的起伏
+	const variance=.7+Math.random()*.6;
 	// ==================== 出手数 ====================
 	const scorSkill=(a.threePoint*0.08+a.midRange*0.10+a.closeShot*0.08+a.drivingLayup*0.07+a.shotIQ*0.06+a.offConsistency*0.04)/99;
 	const shotTend=(tend.shotTendency||50)/50;
@@ -503,120 +505,93 @@ function genBox(a,ovr,opp,win){
 	const driveTend=(tend.driveTendency||50)/50;
 	const shootWilling=shotTend*.35+midTend*.15+threeTend*.20+driveTend*.15;
 	const fgaBase=scorSkill*.42+shootWilling*.28;
-	const fgaR=clp(fgaBase,.06,.62)+Math.random()*.10;
-	const rawFga=Math.round(clp(fgaR*38*pf*roleM.fga,2,26));
-	const fgaCap=clp(Math.round(scorSkill*30+shootWilling*8),2,26);
+	const fgaR=clp(fgaBase,.06,.62)+Math.random()*.16-.04; // ±波动加大
+	const rawFga=Math.round(clp(fgaR*38*pf*roleM.fga*variance,2,28));
+	const fgaCap=clp(Math.round(scorSkill*30+shootWilling*8),3,28);
 	const fga=Math.min(rawFga,fgaCap);
 	// ==================== 命中率 ====================
 	const shotQuality=(a.midRange*0.08+a.threePoint*0.06+a.closeShot*0.06+a.shotIQ*0.06+a.offConsistency*0.03)/99;
 	const contestedFactor=Math.max(0.6,(tend.contestedShotTend||50)/70);
 	const fgBase=shotQuality*.55+(1-contestedFactor)*.08+.15;
-	const fgPct=clp(fgBase,.25,.65)+Math.random()*.06;
-	const fgMax=Math.min(.65,shotQuality*.85+.18);
+	// 命中率波动：±12%（真实比赛命中率波动很大）
+	const fgPct=clp(fgBase,.20,.68)+Math.random()*.16-.08;
+	const fgMax=Math.min(.68,shotQuality*.85+.22);
 	const fgm=Math.round(clp(Math.min(fga*fgPct, fga*fgMax),1,fga-1));
 	// ==================== 三分 ====================
 	const threeSkill=(a.threePoint*0.14+a.catchShoot*0.04+a.offDribbleShot*0.03+a.shotIQ*0.03)/99;
 	const threeWilling=(tend.threePointTend||35)/100;
-	const threePAR=clp(threeWilling*.55+threeSkill*.20,.02,.65)+Math.random()*.08;
+	const threePAR=clp(threeWilling*.55+threeSkill*.20,.02,.72)+Math.random()*.16-.06;
 	const threePA=Math.round(Math.min(fga, fga*threePAR));
-	const threePct=clp(a.threePoint/190+.08,.08,.48);
+	const threePct=clp(a.threePoint/190+.05,.05,.52)+Math.random()*.14-.07;
 	const threePM=Math.round(Math.min(threePA, threePA*threePct));
 	const twoPM=fgm-threePM;
 	// ==================== 罚球 ====================
 	const foulSkill=(a.drawFoul*0.08+a.drivingLayup*0.05+a.strength*0.03)/99;
 	const foulTend=(tend.foulDrawingTend||50)/50;
-	const ftR=clp(foulSkill*.40+foulTend*.15,.01,.45)+Math.random()*.05;
-	const fta=Math.round(fgm*clp(ftR,.02,.55));
-	const ftm=Math.round(fta*(a.freeThrow/100));
+	const ftR=clp(foulSkill*.40+foulTend*.15,.01,.52)+Math.random()*.08;
+	const fta=Math.round(fgm*clp(ftR,.02,.60));
+	const ftm=Math.round(fta*clp(a.freeThrow/100+.Math.random()*.12-.06,.40,1.0));
 	// ==================== 得分 ====================
 	const rawPts=twoPM*2+threePM*3+ftm;
-	const ptsCap=clp(Math.round(scorSkill*38+shootWilling*10),4,50);
+	const ptsCap=clp(Math.round(scorSkill*38+shootWilling*10),5,50);
 	let pts;
-	// 小概率突破上限：爆发之夜（约8%概率，属性和倾向越高概率越大）
 	const burstChance=clp(scorSkill*.12+shootWilling*.05,.03,.18);
 	if(Math.random()<burstChance){
-	  // 突破幅度：5%~25%超过上限
-	  const burst=1+Math.random()*.25+scorSkill*.15;
+	  const burst=1+Math.random()*.30+scorSkill*.18;
 	  pts=Math.min(60,Math.round(rawPts*burst));
 	}else{
 	  pts=Math.min(rawPts,ptsCap);
 	}
 	// ==================== 出场时间 ====================
 	const baseMin=18+Math.round(ovr/7);
-	const min=Math.round(clp(rng(baseMin-4,baseMin+6)*roleM.min,6,40));
+	const min=Math.round(clp(rng(baseMin-6,baseMin+8)*roleM.min,6,40));
 	const hf=hotColdFactor();
 	// ==================== 篮板 ====================
 	const rebSkill=(a.defRebound*0.10+a.offRebound*0.06+a.strength*0.025+a.vertical*0.015+a.hustle*0.02)/99;
 	const rebTend=(tend.offensiveReboundTend||50)/50;
 	const rebBase=rebSkill*.60+rebTend*.15;
-	const rebR=clp(rebBase,.020,.52)+Math.random()*.08;
-	const rawReb=Math.round(clp(rebR*40*pf*hf,0,22));
-	const rebCap=clp(Math.round(rebSkill*22+rebTend*5),0,22);
+	// 篮板波动很大：±随机全幅
+	const rebR=clp(rebBase,.020,.52)+Math.random()*.14;
+	const rawReb=Math.round(clp(rebR*40*pf*hf*variance,0,22));
+	const rebCap=clp(Math.round(rebSkill*24+rebTend*6),0,22);
 	const reb=Math.min(rawReb,rebCap);
-	// ==================== 助攻 ====================
+	// ==================== 助攻（压低保底和上限） ====================
 	const passSkill=(a.passAccuracy*0.15+a.passVision*0.10+a.passIQ*0.08+a.ballHandle*0.05+a.speedWithBall*0.03)/99;
 	const passTend=(tend.dimerTendency2||50)/50;
 	const driveKick=(tend.driveAndKickTend||50)/50;
-	const astBase=passSkill*.55+passTend*.25+driveKick*.10;
-	const astR=clp(astBase,.015,.58)+Math.random()*.06;
-	const rawAst=Math.round(clp(astR*38*pf*roleM.ast*hf,0,16));
-	const astCap=clp(Math.round(passSkill*18+passTend*6),0,16);
+	// 助攻更依赖能力，倾向占比降低
+	const astBase=passSkill*.60+passTend*.18+driveKick*.08;
+	const astR=clp(astBase,.010,.48)+Math.random()*.10;
+	const rawAst=Math.round(clp(astR*30*pf*roleM.ast*hf*variance,0,14));
+	// 硬上限降低：高位仅对顶级控卫开放
+	const astCap=clp(Math.round(passSkill*14+passTend*4),0,14);
 	const ast=Math.min(rawAst,astCap);
 	// ==================== 抢断 ====================
 	const stlSkill=(a.steal*0.16+a.perimeterDef*0.08+a.lateralQuickness*0.05+a.agility*0.03+a.speed*0.02)/99;
 	const stlTend=(tend.stealTendency||50)/50;
 	const defPressure=(tend.defPressureTend||50)/50;
 	const stlBase=stlSkill*.45+stlTend*.18+defPressure*.08;
-	const stlR=clp(stlBase,.010,.52)+Math.random()*.06;
+	const stlR=clp(stlBase,.010,.52)+Math.random()*.12;
+	const rawStl=Math.random()<clp(stlR,.02,.50)?Math.round(clp(stlR*5.5,0,5)):0;
 	const stlCap=clp(Math.round(stlSkill*7+stlTend*2),0,5);
-	const stl=Math.min(Math.random()<clp(stlR,.02,.50)?Math.round(clp(stlR*5.0,0,5)):0,stlCap);
+	const stl=Math.min(rawStl,stlCap);
 	// ==================== 盖帽 ====================
 	const blkSkill=(a.block*0.18+a.interiorDef*0.08+a.vertical*0.05+a.strength*0.03+a.helpDefense*0.04)/99;
 	const blkTend=(tend.blockTendency||50)/50;
 	const helpDef=(tend.helpDefTend||50)/50;
 	const blkBase=blkSkill*.45+blkTend*.16+helpDef*.06;
-	const blkR=clp(blkBase,.005,.48)+Math.random()*.04;
+	const blkR=clp(blkBase,.005,.48)+Math.random()*.10;
+	const rawBlk=Math.random()<clp(blkR,.01,.42)?Math.round(clp(blkR*5.5,0,5)):0;
 	const blkCap=clp(Math.round(blkSkill*7+blkTend*2),0,5);
-	const blk=Math.min(Math.random()<clp(blkR,.01,.42)?Math.round(clp(blkR*5.0,0,5)):0,blkCap);
+	const blk=Math.min(rawBlk,blkCap);
 	// ==================== 失误 ====================
 	const tovSkill=(100-a.ballHandle)*0.06+(100-a.passAccuracy)*0.03+(50-(a.offConsistency||50))*0.02;
 	const tovMin=Math.round(clp(2+tovSkill*.08,0,2));
-	const tovMax=Math.round(clp(tovSkill*.35,1,7));
+	const tovMax=Math.round(clp(tovSkill*.35,1,8));
 	const tov=rng(tovMin,tovMax);
-return{pts,reb,ast,stl,blk,tov,min,fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,ft:fta>0?Math.round(ftm/fta*100):75,fga,fgm,threePA,threePM,fta,ftm};
-}
+	return{pts,reb,ast,stl,blk,tov,min,fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,ft:fta>0?Math.round(ftm/fta*100):75,fga,fgm,threePA,threePM,fta,ftm};}
 
-function simGame(opp,home){const a=GS.curAttrs,ovr=GS.curOVR,hb=home?.035:-.035;const wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008+(ovr-75)*.004+hb+streakBonus(),.08,.92);const win=Math.random()<wp,box=genBox(a,ovr,opp,win);return{gameNum:GS.seasonGames.length+1,opponent:opp,home,win,...box};}
-
-function simOneGame(){
-if(GS.inPO||GS.poDone)return;const gn=GS.seasonGames.length+1;if(gn>82){endRegSeason();return;}
-if(GS.injLeft>0){GS.injLeft--;const opp=GS.nextOpp||pick(NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name)),home=GS.nextHome;const wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008-.08,.06,.88),win=Math.random()<wp;const box={pts:0,reb:0,ast:0,stl:0,blk:0,tov:0,min:0,fg:0,tp:0,ft:0,fga:0,fgm:0,threePA:0,threePM:0,fta:0,ftm:0,injured:!0},res={gameNum:gn,opponent:opp,home,win,...box};GS.seasonGames.push(res);if(res.win)GS.seasonW++;else GS.seasonL++;const oRec=GS.othRecords[opp.name]||{wins:0,losses:0};if(!res.win)oRec.wins++;else oRec.losses++;GS.othRecords[opp.name]=oRec;simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;renderGameResult(res,!1);renderEvents([{text:`🤕 因伤缺阵 (剩余${GS.injLeft}场)`,type:'injury'}]);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();document.getElementById('game-result-area').scrollIntoView({behavior:'smooth',block:'center'});if(GS.seasonGames.length>=82)endRegSeason();return;}
-const s=GS.nextOpp&&GS.nextHome!==undefined?{opp:GS.nextOpp,home:GS.nextHome}:genSched(gn),opp=s.opp,home=s.home;
-const res=simGame(opp,home);GS.seasonGames.push(res);if(res.win)GS.seasonW++;else GS.seasonL++;
-const oRec=GS.othRecords[opp.name]||{wins:0,losses:0};if(!res.win)oRec.wins++;else oRec.losses++;GS.othRecords[opp.name]=oRec;
-simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;
-const evs=rollEvents(gn,res);renderGameResult(res,!1);renderEvents(evs);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();
-document.getElementById('game-result-area').scrollIntoView({behavior:'smooth',block:'center'});if(GS.seasonGames.length>=82)endRegSeason();
-}
-
-function simOtherGames(){const n=rng(3,5);for(let i=0;i<n;i++){const pool=NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name);const t1=pick(pool),t2=pick(pool.filter(t=>t.name!==t1.name));const r1=GS.othRecords[t1.name]||{wins:0,losses:0},r2=GS.othRecords[t2.name]||{wins:0,losses:0},wp=clp(.5+(t1.ovr-t2.ovr)*.008,.1,.9);if(Math.random()<wp){r1.wins++;r2.losses++;}else{r2.wins++;r1.losses++;}GS.othRecords[t1.name]=r1;GS.othRecords[t2.name]=r2;}}
-
-function updateGameLogTable(){const tb=document.getElementById('game-log-tbody');let h='';GS.seasonGames.forEach((g,i)=>{const cls=g.win?'glog-win':'glog-loss',ij=g.injured;h+=`<tr><td>${i+1}</td><td style="text-align:left;font-size:9px;"><img src="${teamLogo(g.opponent)}" style="width:12px;height:12px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${g.opponent.abbr}</td><td class="${cls}">${g.win?'W':'L'}</td><td>${ij?'-':g.pts}</td><td>${ij?'-':g.reb}</td><td>${ij?'-':g.ast}</td><td>${ij?'-':g.stl}</td><td>${ij?'-':g.blk}</td><td>${ij?'-':g.tov}</td><td>${ij?'-':g.min}</td><td>${ij?'-':g.fgm+'/'+g.fga}</td><td>${ij?'-':g.threePM+'/'+g.threePA}</td><td>${ij?'-':g.fg+'%'}</td><td>${ij?'-':g.tp+'%'}</td><td>${ij?'-':g.ft+'%'}</td></tr>`;});tb.innerHTML=h;tb.parentElement.scrollTop=tb.parentElement.scrollHeight;}
-
-function rollEvents(gn,res){
-const evs=[];
-if(Math.random()<.002){const inj=genInjury(GS.curAge+GS.curSeason-1);evs.push({text:inj.text,type:'injury'});GS.injLeft=(GS.injLeft||0)+inj.gms;}
-if(res.pts>=35)evs.push({text:`🔥 爆发之夜！${res.pts}分${res.win?'带队获胜！':'但球队惜败'}`,type:'event'});
-if(res.pts>=10&&res.reb>=10&&res.ast>=10)evs.push({text:`📋 三双！${res.pts}分${res.reb}板${res.ast}助`,type:'milestone'});
-if(res.pts>=40)evs.push({text:`🏆 生涯之夜！轰下${res.pts}分！`,type:'milestone'});
-if(res.win&&Math.random()<.12)evs.push({text:`💥 ${pick(['压哨三分绝杀！','后仰跳投绝杀！','突破上篮绝杀！'])}`,type:'milestone'});
-if(Math.random()<.2){const star=pick(P.filter(p=>p.era==='current'));evs.push(pick([{text:`⭐ 赛后与${star.name}交换球衣`,type:'star'},{text:`💬 ${star.name}赛前对你表示敬意`,type:'star'},{text:`🤝 ${star.name}赛后给你建议："保持专注"`,type:'star'},{text:`📸 与${star.name}的赛前照片走红`,type:'star'},{text:`👀 ${star.name}采访中说："他是联盟的未来"`,type:'star'},{text:`⚡ 与${star.name}的对决被NBA官推转发`,type:'star'}]));}
-if(gn%rng(8,14)===0)evs.push(pick([{text:'🐦 训练视频获10万+点赞',type:'media'},{text:'📱 球迷热议你的表现',type:'media'},{text:'🎬 高光集锦YouTube百万播放',type:'media'},{text:'📸 登上SLAM杂志封面',type:'milestone'},{text:'🎙️ 接受ESPN专访',type:'media'},{text:'👟 球鞋品牌联系经纪人谈代言',type:'media'}]));
-if(gn===41)evs.push({text:'🌟 全明星周末即将到来！',type:'milestone'});
-if(gn%rng(10,16)===0)evs.push(pick([{text:'📰 ESPN本周最佳球员候选人',type:'event'},{text:'🗣️ 教练称赞你的进步',type:'event'},{text:'💬 队友表示和你打球很舒服',type:'event'}]));
-return evs;
-}
-function genInjury(age){const mi=[{text:'🤕 轻微脚踝扭伤（缺2场）',gms:2},{text:'🤕 手指挫伤（缺3场）',gms:3},{text:'🤕 背部痉挛（缺4场）',gms:4}];const ma=[{text:'🏥 脚踝二级扭伤（缺15场）',gms:15},{text:'🏥 腿筋拉伤（缺18场）',gms:18},{text:'🏥 膝盖扭伤（缺22场）',gms:22}];if(age>33&&Math.random()<.25)return pick(ma);if(Math.random()<.08)return pick(ma);return pick(mi);}
+function genInjuryfunction genInjury(age){const mi=[{text:'🤕 轻微脚踝扭伤（缺2场）',gms:2},{text:'🤕 手指挫伤（缺3场）',gms:3},{text:'🤕 背部痉挛（缺4场）',gms:4}];const ma=[{text:'🏥 脚踝二级扭伤（缺15场）',gms:15},{text:'🏥 腿筋拉伤（缺18场）',gms:18},{text:'🏥 膝盖扭伤（缺22场）',gms:22}];if(age>33&&Math.random()<.25)return pick(ma);if(Math.random()<.08)return pick(ma);return pick(mi);}
 
 function endRegSeason(){
 document.getElementById('rs-card').style.display='none';document.getElementById('btn-nxt').style.display='none';document.getElementById('btn-5').style.display='none';document.getElementById('btn-20').style.display='none';document.getElementById('btn-rest').style.display='none';
