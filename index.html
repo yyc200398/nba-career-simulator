@@ -461,14 +461,34 @@ const fdRate=(tend.foulDrawingTend||50)/60,fta=Math.round(fgm*clp(fdRate*.22,.02
 const ftm=Math.round(fta*(a.freeThrow/100));
 const pts=Math.min(35+Math.round(ovr/6), twoPM*2+threePM*3+ftm);
 const baseMin=22+Math.round(ovr/8),min=Math.round(clp(rng(baseMin-4,baseMin+6)*roleM.min,6,40));
-const rR=.6+Math.random()*.8,hf=hotColdFactor();
-const reb=Math.round(clp((a.offRebound*.04+a.defRebound*.08)*pf*40*rR*hf/88,0,18));
-const ast=Math.round(clp((a.passAccuracy*.05+a.ballHandle*.02)*pf*40*rR*hf/88*(Math.max(.5,(tend.dimerTendency2||50)/60))*roleM.ast,0,14));
-const rawStl=(a.steal*.007+a.perimeterDef*.004)*rR*hf*(Math.max(.2,(tend.stealTendency||50)/70));
-const stl=Math.random()<clp(rawStl,.02,.60)?Math.round(clp(rawStl*3.5,0,5)):0;
-const rawBlk=(a.block*.010+a.interiorDef*.005)*rR*hf*(Math.max(.15,(tend.blockTendency||50)/70));
-const blk=Math.random()<clp(rawBlk,.01,.50)?Math.round(clp(rawBlk*3.5,0,5)):0;
-const tov=Math.round(clp(rng(0,Math.max(1,5-a.ballHandle*.04))*rR,0,7));
+const hf=hotColdFactor();
+	// === 篮板：防守篮板+进攻篮板+力量+弹跳+拼抢+倾向 ===
+	const defRebSkill=(a.defRebound*0.10+a.strength*0.025+a.vertical*0.015+a.hustle*0.02)/99;
+	const offRebSkill=(a.offRebound*0.10+a.strength*0.025+a.vertical*0.015+a.hustle*0.02)/99;
+	const rebTend=(tend.offensiveReboundTend||50)/50;
+	const rebR=clp(defRebSkill+offRebSkill*rebTend*.4,.06,.45)+Math.random()*.12;
+	const reb=Math.round(clp(rebR*40*pf*hf,0,22));
+	// === 助攻：传球精度+传球视野+传球智商+控球+持球速度+倾向 ===
+	const passSkill=(a.passAccuracy*0.12+a.passVision*0.08+a.passIQ*0.06+a.ballHandle*0.04+a.speedWithBall*0.03)/99;
+	const passTend=(tend.dimerTendency2||50)/50;
+	const driveKick=(tend.driveAndKickTend||50)/50;
+	const astR=clp(passSkill*.35+passTend*.15+driveKick*.08,.03,.55)+Math.random()*.10;
+	const ast=Math.round(clp(astR*40*pf*roleM.ast*hf,0,16));
+	// === 抢断：抢断+外线防守+横移+敏捷+速度+倾向 ===
+	const stlSkill=(a.steal*0.15+a.perimeterDef*0.08+a.lateralQuickness*0.04+a.agility*0.03+a.speed*0.02)/99;
+	const stlTend=(tend.stealTendency||50)/50;
+	const defPressure=(tend.defPressureTend||50)/50;
+	const stlR=clp(stlSkill*.35+stlTend*.15+defPressure*.08,.02,.55)+Math.random()*.08;
+	const stl=Math.random()<clp(stlR,.03,.55)?Math.round(clp(stlR*4.5,0,5)):0;
+	// === 盖帽：盖帽+内线防守+弹跳+力量+协防+倾向 ===
+	const blkSkill=(a.block*0.16+a.interiorDef*0.08+a.vertical*0.05+a.strength*0.03+a.helpDefense*0.04)/99;
+	const blkTend=(tend.blockTendency||50)/50;
+	const helpDef=(tend.helpDefTend||50)/50;
+	const blkR=clp(blkSkill*.35+blkTend*.15+helpDef*.06,.01,.50)+Math.random()*.06;
+	const blk=Math.random()<clp(blkR,.02,.45)?Math.round(clp(blkR*4.5,0,5)):0;
+	// === 失误：控球+传球精度 ===
+	const tovBase=(100-a.ballHandle)*0.05+(100-a.passAccuracy)*0.03;
+	const tov=Math.round(clp(rng(0,Math.round(tovBase*1.8)),0,7));
 return{pts,reb,ast,stl,blk,tov,min,fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,ft:fta>0?Math.round(ftm/fta*100):75,fga,fgm,threePA,threePM,fta,ftm};
 }
 
