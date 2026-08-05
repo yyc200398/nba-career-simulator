@@ -91,7 +91,16 @@ body{background-image:radial-gradient(ellipse at 50% 0%,rgba(29,66,138,.35) 0%,t
 <div id="screen-summary" class="screen">
 <div class="card"><div class="card-title">🏀 你的自建球员</div><div class="player-card" id="player-card"></div>
 <div style="text-align:center;font-size:10px;color:var(--mut);margin-top:-6px;">💡 抽取的属性/倾向继承球星原值的95%，未抽取的类别使用随机基础值</div>
-<div class="btn-group"><button class="btn btn-gold" onclick="startCareer()">🚀 开启NBA生涯</button><button class="btn btn-danger btn-sm" onclick="restartGame()">🔄 重新创建</button></div>
+<div class="btn-group"><button class="btn btn-gold" onclick="goToTeamSelect()">👕 选择球队</button><button class="btn btn-danger btn-sm" onclick="restartGame()">🔄 重新创建</button></div>
+</div>
+</div>
+
+<!-- 球队选择 -->
+<div id="screen-team" class="screen">
+<div class="card"><div class="card-title">👕 选择你的第一支球队</div>
+<div style="text-align:center;font-size:12px;color:var(--mut);margin-bottom:12px;">根据你的 OVR，部分球队可能不会给你合同</div>
+<div id="team-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
+<div class="btn-group" style="margin-top:16px;"><button class="btn btn-gold" id="btn-team-confirm" onclick="confirmTeamSelection()">✅ 确认加入</button></div>
 </div>
 </div>
 
@@ -407,8 +416,51 @@ GS.playerTend=ft;
 const fn=['Jay','Mike','Chris','Tony','Ray','Kai','Zion','Malik','Devin','Jalen','Marcus','Andre','Brandon','Terrence'];
 const ln=['Johnson','Williams','Thompson','Davis','Wilson','Brown','Lee','Jackson','Harris','Walker','Carter','Mitchell'];
 GS.playerName=pick(fn)+' '+pick(ln);GS.curAge=19+rng(0,2);
-GS.curTeam=pick(NBA_TEAMS.filter(t=>t.ovr<85));GS.contractYears=2+rng(0,2);GS.curSeason=0;
-renderPlayerSummary();showScreen('screen-summary');
+GS.contractYears=2+rng(0,2);GS.curSeason=0;
+	GS.curTeam=null;GS.selectedTeam=null;
+	renderPlayerSummary();showScreen('screen-summary');
+}
+
+function goToTeamSelect(){
+	renderTeamGrid();showScreen('screen-team');
+}
+
+function renderTeamGrid(){
+	const ovr=GS.curOVR;
+	const teams=[...NBA_TEAMS].sort((a,b)=>b.ovr-a.ovr);
+	let h='';
+	teams.forEach(t=>{
+	  const canSign=t.ovr<=ovr+18;
+	  const style=canSign?'':'opacity:0.4;pointer-events:none;';
+	  const hint=canSign?'':'(球队实力过强，暂不考虑)';
+	  const offers=['弱队核心','重建基石','替补轮换','首发机会','战术拼图'];
+	  let offer=pick(canSign?offers:['(暂无报价)']);
+	  h+=`<div class="train-card" id="team-card-${t.abbr}" onclick="selectTeam('${t.abbr}')" style="${style}">
+	    <div style="text-align:center;">
+	      <img src="${teamLogo(t)}" style="width:44px;height:44px;object-fit:contain;border-radius:50%;" onerror="this.style.display='none';">
+	      <span style="display:none;font-size:32px;">${t.emoji}</span>
+	      <div style="font-weight:700;font-size:12px;color:var(--gld);margin-top:2px;">${t.abbr}</div>
+	      <div style="font-size:10px;color:var(--mut);">${t.name}</div>
+	      <div style="font-size:10px;color:var(--mut);">OVR ${t.ovr} | ${t.conf==='west'?'西部':'东部'}</div>
+	      <div style="font-size:10px;color:var(--cyn);margin-top:2px;">${canSign?offer:hint}</div>
+	    </div>
+	  </div>`;
+	});
+	document.getElementById('team-grid').innerHTML=h;
+	document.getElementById('btn-team-confirm').disabled=true;
+}
+
+function selectTeam(abbr){
+	document.querySelectorAll('#team-grid .train-card').forEach(c=>c.classList.remove('selected'));
+	document.getElementById('team-card-'+abbr).classList.add('selected');
+	GS.selectedTeam=NBA_TEAMS.find(t=>t.abbr===abbr);
+	document.getElementById('btn-team-confirm').disabled=false;
+}
+
+function confirmTeamSelection(){
+	if(!GS.selectedTeam)return;
+	GS.curTeam=GS.selectedTeam;
+	startCareer();
 }
 
 function renderPlayerSummary(){
