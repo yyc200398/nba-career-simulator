@@ -729,7 +729,7 @@ function startPlayoffs(seed){GS.inPO=!0;GS.poDone=!1;GS.poType='playoff';GS.poRo
 function advancePlayoffRound(){GS.poRound++;if(GS.poRound===4){const oppConfTeams=GS.curTeam.conf=='west'?EAST:WEST;GS.poOpp=pick(oppConfTeams);addLogEvent('\u{1F3C6} \u603B\u51B3\u8D5B\uFF01'+(GS.curTeam.conf=='west'?'\u897F\u90E8':'\u4E1C\u90E8')+'\u51A0\u519B vs '+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');}else{const myConf=GS.curTeam.conf;const confPool=(myConf=='west'?WEST:EAST).filter(t=>t.name!==GS.curTeam.name);let nextOpp=pick(confPool.length>0?confPool:NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name));GS.poOpp=nextOpp;const rn=GS.poRound===2?'\u5206\u533A\u534A\u51B3\u8D5B':GS.poRound===3?'\u5206\u533A\u51B3\u8D5B':'\u7CFB\u5217\u8D5B';addLogEvent('\u{1F3C0} \u664B\u7EA7'+rn+'\uFF01\u5BF9\u624B\uFF1A'+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');}GS.poW=0;GS.poOppW=0;GS.poSeries=[];GS.poDone=!1;document.getElementById('po-btns').style.display='';updatePlayoffUI();document.getElementById('po-card').scrollIntoView({behavior:'smooth'});}
 function endPlayoffs(isChamp){GS.inPO=!1;GS.poDone=!0;document.getElementById('po-card').style.display='none';const avg=compileAvg(),poRes={madePlayoffs:!0,isChamp,rounds:GS.poResults};if(isChamp)addLogEvent('🏆🎉 NBA总冠军！！！','milestone');showSeasonEnd(avg,poRes);}
 
-async function simPOSeries(){while(GS.inPO&&!GS.poDone&&GS.poW<4&&GS.poOppW<4){simOnePO();await new Promise(r=>setTimeout(r,150));}}
+function simPOSeries(){while(GS.inPO&&!GS.poDone&&GS.poW<4&&GS.poOppW<4){simOnePO();}}
 
 function updatePlayoffUI(){
 const pc=document.getElementById('po-content'),tiers=['','首轮','分区半决赛','分区决赛','总决赛'];let sg='';
@@ -863,8 +863,8 @@ if(k==='stamina'&&age>34)v-=Math.round((age-34)*.8);
 if(['passAccuracy','midRange','postControl','freeThrow','passIQ','shotIQ','intangibles','leadership'].includes(k)&&age>28&&age<36)v+=Math.round(Math.min(3,(age-28)*.3));
 const maxA=Math.min(99,80+Math.round((pot-50)*.45));a[k]=clp(v,25,maxA);});return a;}
 function checkRetire(age,ovr){if(age>=42)return!0;if(age>=40&&ovr<70)return Math.random()<.55;if(age>=38&&ovr<65)return Math.random()<.45;if(age>=37&&ovr<58)return Math.random()<.5;return!1;}
-async function simGames(n){for(let i=0;i<n&&!GS.inPO&&!GS.poDone&&GS.seasonGames.length<82;i++){simOneGame();await new Promise(r=>setTimeout(r,80));}}
-async function simRestOfSeason(){await simGames(82-GS.seasonGames.length);}
+function simGames(n){for(var i=0;i<n&&!GS.inPO&&!GS.poDone&&GS.seasonGames.length<82;i++){simOneGame();}}
+function simRestOfSeason(){simGames(82-GS.seasonGames.length);}
 function retirePlayer(){GS.retired=!0;renderRetire();showScreen('screen-retire');}
 
 // ==================== UI ====================
