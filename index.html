@@ -645,9 +645,6 @@ const sorted=[GS.curTeam,...confTeams].sort((a,b)=>((recs[b.name]||{}).wins||0)-
 if(seed<=6){startPlayoffs(seed);}else if(seed<=10&&GS.seasonW>=25){startPlayIn(seed,sorted);}else{showSeasonEnd(avg,{madePlayoffs:!1,isChamp:!1});setTimeout(()=>addLogEvent('😞 未能进入附加赛区','injury'),500);}
 }
 
-function compileAvg(){const g=GS.seasonGames.filter(x=>!x.injured),c=g.length||1;const tFGM=g.reduce((s,x)=>s+(x.fgm||0),0),tFGA=g.reduce((s,x)=>s+(x.fga||0),0),t3PM=g.reduce((s,x)=>s+(x.threePM||0),0),t3PA=g.reduce((s,x)=>s+(x.threePA||0),0);return{pts:Math.round(g.reduce((s,x)=>s+x.pts,0)/c*10)/10,reb:Math.round(g.reduce((s,x)=>s+x.reb,0)/c*10)/10,ast:Math.round(g.reduce((s,x)=>s+x.ast,0)/c*10)/10,stl:Math.round(g.reduce((s,x)=>s+x.stl,0)/c*10)/10,blk:Math.round(g.reduce((s,x)=>s+x.blk,0)/c*10)/10,fg:tFGA>0?Math.round(tFGM/tFGA*100):40,tp:t3PA>0?Math.round(t3PM/t3PA*100):30,ft:Math.round(g.reduce((s,x)=>s+x.ft,0)/c),fga:Math.round(tFGA/c*10)/10,fgm:Math.round(tFGM/c*10)/10,threePA:Math.round(t3PA/c*10)/10,threePM:Math.round(t3PM/c*10)/10};}
-
-// ==================== PLAY-IN: NBA realistic ====================
 function startPlayIn(seed,sorted){
 GS.inPO=!0;GS.poDone=!1;GS.poRound=0;GS.poType='playin';GS.poSeries=[];GS.poW=0;GS.poOppW=0;GS.playInStage=1;GS.playInSeed=seed;GS.playInSorted=sorted;
 const myConf=GS.curTeam.conf;
