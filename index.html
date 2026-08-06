@@ -148,9 +148,12 @@ const ATTR_ZH={closeShot:'近距离投篮',drivingLayup:'突破上篮',drivingDu
 const TEND_ZH={shotTendency:'总投篮倾向',closeShotTend:'近投倾向',midRangeTend:'中投倾向',threePointTend:'三分倾向',drivingShotTend:'突破投篮倾向',pullUpTend:'急停跳投倾向',catchShootTend:'接球投篮倾向',stepBackTend:'后撤步倾向',postUpTend:'背身单打倾向',contestedShotTend:'强投倾向',driveTendency:'总突破倾向',driveToBasketTend:'攻击篮筐倾向',driveAndKickTend:'突破分球倾向',isoTendency:'单打倾向',pickAndRollTend:'挡拆倾向',spotUpTend:'定点投篮倾向',passToOpenTend:'传球给空位倾向',touchPassTend:'触球即传倾向',flashyPassTend:'花式传球倾向',alleyOopTend:'空接倾向',dimerTendency2:'助攻倾向',defPressureTend:'防守施压倾向',stealTendency:'抢断倾向',blockTendency:'盖帽倾向',helpDefTend:'协防倾向',doubleTeamTend:'包夹倾向',chargeTend:'造进攻犯规倾向',fastBreakTend:'快攻倾向',halfCourtTend:'半场进攻倾向',clutchTendency:'关键时刻倾向',tempoPusher:'比赛节奏控制',foulDrawingTend:'造犯规倾向',offensiveReboundTend:'冲抢进攻篮板倾向'};
 const DEF_TENDS={PG:{shotTendency:65,closeShotTend:45,midRangeTend:70,threePointTend:75,drivingShotTend:60,pullUpTend:72,catchShootTend:65,stepBackTend:55,postUpTend:15,contestedShotTend:45,driveTendency:75,driveToBasketTend:70,driveAndKickTend:78,isoTendency:72,pickAndRollTend:85,spotUpTend:55,passToOpenTend:88,touchPassTend:75,flashyPassTend:55,alleyOopTend:35,dimerTendency2:80,defPressureTend:65,stealTendency:60,blockTendency:20,helpDefTend:55,doubleTeamTend:18,chargeTend:12,fastBreakTend:78,halfCourtTend:60,clutchTendency:75,tempoPusher:75,foulDrawingTend:55,offensiveReboundTend:28},SG:{shotTendency:72,closeShotTend:55,midRangeTend:75,threePointTend:78,drivingShotTend:68,pullUpTend:70,catchShootTend:72,stepBackTend:60,postUpTend:22,contestedShotTend:55,driveTendency:70,driveToBasketTend:72,driveAndKickTend:55,isoTendency:68,pickAndRollTend:62,spotUpTend:68,passToOpenTend:72,touchPassTend:62,flashyPassTend:45,alleyOopTend:42,dimerTendency2:58,defPressureTend:68,stealTendency:62,blockTendency:32,helpDefTend:58,doubleTeamTend:22,chargeTend:18,fastBreakTend:75,halfCourtTend:65,clutchTendency:78,tempoPusher:68,foulDrawingTend:62,offensiveReboundTend:35},SF:{shotTendency:68,closeShotTend:60,midRangeTend:72,threePointTend:72,drivingShotTend:62,pullUpTend:62,catchShootTend:68,stepBackTend:55,postUpTend:38,contestedShotTend:52,driveTendency:65,driveToBasketTend:68,driveAndKickTend:55,isoTendency:62,pickAndRollTend:58,spotUpTend:65,passToOpenTend:68,touchPassTend:58,flashyPassTend:38,alleyOopTend:42,dimerTendency2:55,defPressureTend:72,stealTendency:62,blockTendency:48,helpDefTend:65,doubleTeamTend:30,chargeTend:22,fastBreakTend:72,halfCourtTend:68,clutchTendency:75,tempoPusher:62,foulDrawingTend:58,offensiveReboundTend:45},PF:{shotTendency:60,closeShotTend:72,midRangeTend:62,threePointTend:48,drivingShotTend:42,pullUpTend:38,catchShootTend:55,stepBackTend:32,postUpTend:62,contestedShotTend:48,driveTendency:55,driveToBasketTend:58,driveAndKickTend:42,isoTendency:42,pickAndRollTend:48,spotUpTend:52,passToOpenTend:55,touchPassTend:42,flashyPassTend:25,alleyOopTend:38,dimerTendency2:42,defPressureTend:68,stealTendency:45,blockTendency:65,helpDefTend:72,doubleTeamTend:38,chargeTend:28,fastBreakTend:62,halfCourtTend:72,clutchTendency:68,tempoPusher:52,foulDrawingTend:52,offensiveReboundTend:62},C:{shotTendency:52,closeShotTend:82,midRangeTend:42,threePointTend:32,drivingShotTend:28,pullUpTend:22,catchShootTend:42,stepBackTend:18,postUpTend:78,contestedShotTend:48,driveTendency:35,driveToBasketTend:38,driveAndKickTend:28,isoTendency:28,pickAndRollTend:35,spotUpTend:38,passToOpenTend:42,touchPassTend:32,flashyPassTend:15,alleyOopTend:55,dimerTendency2:32,defPressureTend:72,stealTendency:32,blockTendency:78,helpDefTend:78,doubleTeamTend:48,chargeTend:35,fastBreakTend:38,halfCourtTend:78,clutchTendency:65,tempoPusher:38,foulDrawingTend:48,offensiveReboundTend:72}};
 const TOTAL_SPINS=7,TOTAL_TEND_SPINS=5;
+const POS_EVO={PG:{finishing:.15,shooting:.25,playmaking:.35,defense:.10,athletic:.10,mental:.05},SG:{finishing:.20,shooting:.30,playmaking:.18,defense:.15,athletic:.12,mental:.05},SF:{finishing:.22,shooting:.22,playmaking:.16,defense:.18,athletic:.14,mental:.08},PF:{finishing:.28,shooting:.12,playmaking:.10,defense:.25,athletic:.15,mental:.10},C:{finishing:.28,shooting:.08,playmaking:.08,defense:.30,athletic:.16,mental:.10}};
+const TEND_EVO_BOOST={shotTend:{shooting:1.0,finishing:0.3},driveTend:{finishing:0.9,athletic:0.3},passTend:{playmaking:1.0,mental:0.1},defTend:{defense:1.0,athletic:0.2},playTend:{athletic:0.5,mental:0.4,shooting:0.2}};
 const POS_W={PG:{finishing:.15,shooting:.30,playmaking:.30,defense:.12,athletic:.08,mental:.05},SG:{finishing:.25,shooting:.30,playmaking:.18,defense:.12,athletic:.10,mental:.05},SF:{finishing:.22,shooting:.25,playmaking:.15,defense:.18,athletic:.12,mental:.08},PF:{finishing:.22,shooting:.15,playmaking:.10,defense:.25,athletic:.18,mental:.10},C:{finishing:.25,shooting:.12,playmaking:.08,defense:.30,athletic:.15,mental:.10}};
 function calcOVR(a,pos){const pw=POS_W[pos]||POS_W.SF;let o=0;Object.entries(pw).forEach(([ck,w])=>{o+=catAvg(a,ck)*w;});return Math.round(o);}
 function catAvg(a,ck){return Math.round(ATTR_CATS[ck].keys.reduce((s,k)=>s+(a[k]||50),0)/ATTR_CATS[ck].keys.length);}
+function getTendAvg(tk){const c=TEND_CATS[tk];if(!c||!GS.playerTend)return.5;return c.keys.reduce((s,k)=>s+Math.min(99,Math.max(1,GS.playerTend[k]||50)),0)/(c.keys.length*100);}
 function mkP(name,pos,era,ovr,h,t){
 const tpl=pos==='PG'?{closeShot:82,drivingLayup:88,drivingDunk:58,standingDunk:30,postControl:48,postFade:45,drawFoul:75,handsRating:85,midRange:82,threePoint:84,freeThrow:84,offDribbleShot:82,catchShoot:80,contestedShot:62,shotIQ:82,passAccuracy:90,ballHandle:92,speedWithBall:86,passVision:88,passIQ:84,dimerTendency:80,interiorDef:44,perimeterDef:70,steal:68,block:32,offRebound:36,defRebound:50,helpDefense:54,defConsistency:66,speed:88,acceleration:90,strength:54,vertical:60,stamina:88,hustle:68,lateralQuickness:82,agility:88,offConsistency:80,clutchFactor:82,intangibles:72,workEthic:78,injuryResistance:76,leadership:70,potential:84}
 :pos==='SG'?{closeShot:85,drivingLayup:86,drivingDunk:82,standingDunk:40,postControl:54,postFade:56,drawFoul:74,handsRating:84,midRange:84,threePoint:82,freeThrow:82,offDribbleShot:80,catchShoot:82,contestedShot:62,shotIQ:80,passAccuracy:74,ballHandle:86,speedWithBall:80,passVision:70,passIQ:68,dimerTendency:58,interiorDef:48,perimeterDef:74,steal:68,block:40,offRebound:38,defRebound:50,helpDefense:54,defConsistency:68,speed:86,acceleration:88,strength:62,vertical:76,stamina:88,hustle:68,lateralQuickness:80,agility:86,offConsistency:78,clutchFactor:84,intangibles:72,workEthic:74,injuryResistance:78,leadership:64,potential:84}
@@ -500,70 +503,78 @@ function streakBonus(){if(GS.seasonGames.length<3)return 0;const l=GS.seasonGame
 function hotColdFactor(){if(GS.seasonGames.length<3)return 1;const l=GS.seasonGames.slice(-3).filter(g=>!g.injured),ap=l.length?l.reduce((s,g)=>s+g.pts,0)/l.length:15;if(ap>32)return 1.25;if(ap>22)return 1.08;if(ap<10)return.7;if(ap<15)return.88;return 1;}
 
 function genBox(a,ovr,opp,win){
-	refreshRole();var roleM=getRoleMultiplier();var tend=GS.playerTend||{};
-	var pf=(GS.curTeam.pace+opp.pace)/2/85;
-	function td(k,d){d=d||50;var v=tend[k];return(v!==undefined&&v===v)?v:d;}
+		refreshRole();var roleM=getRoleMultiplier();var tend=GS.playerTend||{};
+		var pf=(GS.curTeam.pace+opp.pace)/2/85;
+		function td(k,d){d=d||50;var v=tend[k];return(v!==undefined&&v===v)?v:d;}
 
-	// ====== 1. SCORING ======
-	var sAttr=(a.closeShot||50)*.18+(a.drivingLayup||50)*.16+(a.drivingDunk||50)*.10+(a.standingDunk||50)*.06+(a.postControl||50)*.06+(a.midRange||50)*.18+(a.threePoint||50)*.14+(a.offDribbleShot||50)*.12;
-	var sTend=td('shotTendency')*.35+td('threePointTend')*.20+td('driveTendency')*.18+td('midRangeTend')*.15+td('pullUpTend')*.08+td('postUpTend')*.04;
-	var sTM=clp(sTend/60,.25,1.55);
-	var fga=Math.round(clp((6+(sAttr/99)*14*sTM*roleM.fga*pf)*(.55+Math.random()*.70),1,32));
-	var rawFG=clp(.30+(sAttr/99)*.40,.24,.72);
-	var shotQ=clp(.84+(td('catchShootTend')-50)*.002-(td('contestedShotTend')-50)*.001,.50,1.06);
-	var fgPct=clp(rawFG*shotQ,.16,.78);
-	var fgm=Math.round(clp(fga*fgPct*(.82+Math.random()*.32),1,Math.max(1,fga-1)));
-	var threeTendMod=clp(td('threePointTend')/100,.08,.80);
-	var threeRatio=clp(threeTendMod*.50*(a.threePoint/99),.02,.72);
-	var threePA=Math.round(clp(fga*threeRatio*(.50+Math.random()*.70),0,fga));
-	var tpRate=clp(.18+(a.threePoint/99)*.42,.14,.56);
-	var threePM=Math.round(clp(threePA*tpRate*(.76+Math.random()*.40),0,threePA));
-	var twoPM=fgm-threePM;
-	var ftTendMod=clp(td('foulDrawingTend')/100,.15,.75);
-	var fta=Math.round(clp(fga*ftTendMod*(a.drawFoul/99)*.22*(.60+Math.random()*.50),0,18));
-	var ftm=Math.round(fta*clp(a.freeThrow/105,.30,.96));
-	var ptsCap=ovr>=95?58:ovr>=90?52:ovr>=85?46:ovr>=80?40:ovr>=72?34:28;
-	var pts=clp((twoPM*2+threePM*3+ftm)*(.86+Math.random()*.22),2,ptsCap);
-	var isBreakout=Math.random()<.08;
-	if(isBreakout){pts=Math.round(Math.min(pts*1.40+rng(2,10),ptsCap+12));}
-	pts=Math.round(pts);
+		// ====== 1. SCORING (wide-random) ======
+		var sAttr=(a.closeShot||50)*.18+(a.drivingLayup||50)*.16+(a.drivingDunk||50)*.10+(a.standingDunk||50)*.06+(a.postControl||50)*.06+(a.midRange||50)*.18+(a.threePoint||50)*.14+(a.offDribbleShot||50)*.12;
+		var sTend=td('shotTendency')*.35+td('threePointTend')*.20+td('driveTendency')*.18+td('midRangeTend')*.15+td('pullUpTend')*.08+td('postUpTend')*.04;
+		var sTM=clp(sTend/60,.25,1.55);
+		var fga=Math.round(clp((6+(sAttr/99)*14*sTM*roleM.fga*pf)*(.30+Math.random()*1.20),1,35));
+		var rawFG=clp(.30+(sAttr/99)*.40,.24,.72);
+		var shotQ=clp(.84+(td('catchShootTend')-50)*.002-(td('contestedShotTend')-50)*.001,.50,1.06);
+		var fgPct=clp(rawFG*shotQ,.16,.78);
+		var fgm=Math.round(clp(fga*fgPct*(.55+Math.random()*.70),1,Math.max(1,fga-1)));
+		var threeTendMod=clp(td('threePointTend')/100,.08,.80);
+		var threeRatio=clp(threeTendMod*.50*(a.threePoint/99),.02,.72);
+		var threePA=Math.round(clp(fga*threeRatio*(.30+Math.random()*1.00),0,fga));
+		var tpRate=clp(.18+(a.threePoint/99)*.42,.14,.56);
+		var threePM=Math.round(clp(threePA*tpRate*(.50+Math.random()*.80),0,threePA));
+		var twoPM=fgm-threePM;
+		var ftTendMod=clp(td('foulDrawingTend')/100,.15,.75);
+		var fta=Math.round(clp(fga*ftTendMod*(a.drawFoul/99)*.26*(.40+Math.random()*.80),0,22));
+		var ftm=Math.round(fta*clp(a.freeThrow/105,.30,.96));
+		var ptsCap=ovr>=95?60:ovr>=90?54:ovr>=85?48:ovr>=80?42:ovr>=72?36:30;
+		var pts=clp((twoPM*2+threePM*3+ftm)*(.70+Math.random()*.45),2,ptsCap);
+		var isBreakout=Math.random()<.08;
+		if(isBreakout){pts=Math.round(Math.min(pts*1.50+rng(3,14),ptsCap+14));}
+		pts=Math.round(pts);
 
-	// ====== 2. REBOUNDS ======
-	var rebAttr=(a.defRebound||40)*.50+(a.offRebound||40)*.22+(a.strength||50)*.10+(a.vertical||50)*.10+(a.hustle||50)*.08;
-	var rebTendMod=clp(td('offensiveReboundTend')/100,.20,.70);
-	var reb=Math.round(clp((.8+ovr*.015+rebAttr*.15*(rebTendMod+.40)*roleM.fga*pf)*(.50+Math.random()*.90),0,22));
+		// ====== 2. REBOUNDS (pos: C>PF>SF>SG>PG + breakout) ======
+		var rebAttr=(a.defRebound||40)*.50+(a.offRebound||40)*.22+(a.strength||50)*.10+(a.vertical||50)*.10+(a.hustle||50)*.08;
+		var rebTendMod=clp(td('offensiveReboundTend')/100,.20,.70);
+		var rebPosMod={"PG":0.35,"SG":0.55,"SF":0.75,"PF":1.15,"C":1.55};
+		var rebPM=rebPosMod[GS.playerPos]||.75;
+		var rebBase=clp((.8+rebAttr*.12*(rebTendMod+.30)*rebPM*pf)*(.30+Math.random()*1.00),0,20);
+		var rebCap={"PG":8,"SG":10,"SF":14,"PF":18,"C":22}[GS.playerPos]||14;
+		var rebBreak=rebAttr>=88&&rebTendMod>=.60&&Math.random()<.18;
+		var reb=rebBreak?Math.round(clp(rebBase*1.45,rebCap+2,rebCap+9)):Math.round(Math.min(rebBase,rebCap));
 
-	// ====== 3. ASSISTS ======
-	var passAttr=(a.passAccuracy||50)*.38+(a.passVision||50)*.28+(a.passIQ||50)*.22+(a.ballHandle||50)*.12;
-	var passTendRaw=td('dimerTendency2')*.42+td('passToOpenTend')*.35+td('touchPassTend')*.14+td('driveAndKickTend')*.09;
-	var passTendMod=clp(passTendRaw/55,.15,1.55);
-	var ast=Math.round(clp((.5+ovr*.012+passAttr*.12*passTendMod*roleM.ast*pf)*(.50+Math.random()*.90),0,clp(Math.round(passAttr/7.5),2,16)));
+		// ====== 3. ASSISTS (pos: PG>SG>SF>PF>C + breakout) ======
+		var passAttr=(a.passAccuracy||50)*.38+(a.passVision||50)*.28+(a.passIQ||50)*.22+(a.ballHandle||50)*.12;
+		var passTendRaw=td('dimerTendency2')*.42+td('passToOpenTend')*.35+td('touchPassTend')*.14+td('driveAndKickTend')*.09;
+		var passTendMod=clp(passTendRaw/55,.15,1.55);
+		var passPosMod={"PG":1.55,"SG":1.20,"SF":0.90,"PF":0.65,"C":0.45};
+		var passPM=passPosMod[GS.playerPos]||.90;
+		var astBase=clp((.3+passAttr*.10*passTendMod*passPM*pf)*(.30+Math.random()*1.00),0,16);
+		var astCap={"PG":14,"SG":10,"SF":8,"PF":7,"C":5}[GS.playerPos]||10;
+		var astBreak=passAttr>=85&&passTendMod>=.55&&Math.random()<.18;
+		var ast=astBreak?Math.round(clp(astBase*1.50,astCap+2,astCap+10)):Math.round(Math.min(astBase,astCap));
 
-	// ====== 4. STEALS ======
-	var stlTM=clp(td('stealTendency')/100,.10,.70);
-	var stlSkill=(a.steal||40)*.05*stlTM*roleM.fga*pf;
-	var stl=Math.random()<clp(stlSkill*(.65+Math.random()*.55),.02,.70)?Math.round(clp(stlSkill*2.0*(.40+Math.random()*1.10),0,5)):0;
+		// ====== 4. STEALS ======
+		var stlTM=clp(td('stealTendency')/100,.10,.70);
+		var stlSkill=(a.steal||40)*.05*stlTM*roleM.fga*pf;
+		var stl=Math.random()<clp(stlSkill*(.45+Math.random()*.90),.03,.75)?Math.round(clp(stlSkill*2.5*(.25+Math.random()*1.35),0,6)):0;
 
-	// ====== 5. BLOCKS ======
-	var blkTM=clp(td('blockTendency')/100,.10,.70);
-	var blkSkill=(a.block||40)*.05*blkTM*roleM.fga*pf;
-	var blk=Math.random()<clp(blkSkill*(.60+Math.random()*.55),.04,.65)?Math.round(clp(blkSkill*2.0*(.35+Math.random()*1.15),0,5)):0;
+		// ====== 5. BLOCKS ======
+		var blkTM=clp(td('blockTendency')/100,.10,.70);
+		var blkSkill=(a.block||40)*.05*blkTM*roleM.fga*pf;
+		var blk=Math.random()<clp(blkSkill*(.45+Math.random()*.90),.04,.70)?Math.round(clp(blkSkill*2.5*(.25+Math.random()*1.35),0,6)):0;
 
-	// ====== 6. TURNOVERS ======
-	var ballSec=(a.ballHandle||50)*.60+(a.passAccuracy||50)*.40;
-	var riskRaw=td('flashyPassTend')*.28+td('isoTendency')*.22+td('driveToBasketTend')*.20+td('alleyOopTend')*.10;
-	var riskMod=clp(riskRaw/55,.30,1.50);
-	var tov=Math.round(clp(((100-ballSec)*.042*.55+riskMod*1.35*.45)*(.50+Math.random()*.90),.1,7));
+		// ====== 6. TURNOVERS (wider base) ======
+		var ballSec=(a.ballHandle||50)*.60+(a.passAccuracy||50)*.40;
+		var riskRaw=td('flashyPassTend')*.28+td('isoTendency')*.22+td('driveToBasketTend')*.20+td('alleyOopTend')*.10;
+		var riskMod=clp(riskRaw/55,.30,1.50);
+		var tov=Math.round(clp(((100-ballSec)*.060*.65+riskMod*1.70*.55)*(.35+Math.random()*1.10),.3,8));
 
-	// ====== 7. MINUTES ======
-	var min=Math.round(clp((14+ovr*.22)*roleM.min*(.70+Math.random()*.55),6,42));
+		// ====== 7. MINUTES ======
+		var min=Math.round(clp((14+ovr*.22)*roleM.min*(.70+Math.random()*.55),6,42));
 
-	return{pts:pts,reb:reb,ast:ast,stl:stl,blk:blk,tov:tov,min:min,
-		fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,
-		ft:fta>0?Math.round(ftm/fta*100):75,fga:fga,fgm:fgm,threePA:threePA,threePM:threePM,fta:fta,ftm:ftm,isBreakout:isBreakout};
-}
-
-
+		return{pts:pts,reb:reb,ast:ast,stl:stl,blk:blk,tov:tov,min:min,
+			fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,
+			ft:fta>0?Math.round(ftm/fta*100):75,fga:fga,fgm:fgm,threePA:threePA,threePM:threePM,fta:fta,ftm:ftm,isBreakout:isBreakout};
+	}
 
 function simGame(opp,home){const a=GS.curAttrs,ovr=GS.curOVR,hb=home?.035:-.035;const wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008+(ovr-75)*.004+hb+streakBonus(),.08,.92);const win=Math.random()<wp,box=genBox(a,ovr,opp,win);return{gameNum:GS.seasonGames.length+1,opponent:opp,home,win,...box};}
 
@@ -719,8 +730,8 @@ if(checkRetire(age,GS.curOVR)){document.getElementById('btn-ns').style.display='
 }
 
 function determineAwards(avg,poRes){const aw=[],ovr=GS.curOVR,tw=GS.seasonW,tl=GS.seasonL;
-const mvpScore=avg.pts*1.2+avg.reb*0.8+avg.ast*1.0+avg.stl*2.0+avg.blk*1.5+tw*0.3+ovr*0.4;
-const isMVP=ovr>=85&&tw>=45&&avg.pts>=22&&mvpScore>=100&&Math.random()<clp(.10+(mvpScore-100)*.008,.04,.60);
+const mvpScore=avg.pts*1.2+avg.reb*0.8+avg.ast*1.0+avg.stl*2.0+avg.blk*1.5+tw*0.4+ovr*0.4;
+const isMVP=ovr>=80&&tw>=38&&avg.pts>=18&&mvpScore>=80&&Math.random()<clp(.15+(mvpScore-80)*.010,.06,.65);
 if(isMVP)aw.push('MVP');
 if(GS.curSeason===1&&ovr>=70&&avg.pts>=10&&Math.random()<.7)aw.push('ROTY');
 const isAS=avg.pts>=18&&ovr>=82&&Math.random()<.55;
@@ -751,8 +762,10 @@ return aw;}
 function showContractOffers(){document.getElementById('train-card').style.display='none';document.getElementById('contract-card').style.display='';document.getElementById('btn-ns').style.display='none';GS.contractOffers=[];const offerTeams=[GS.curTeam];for(let i=0;i<rng(2,4);i++){const t=pick(NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name));if(!offerTeams.find(x=>x.name===t.name))offerTeams.push(t);}offerTeams.forEach(t=>{GS.contractOffers.push({team:t,salary:rng(8,40),years:rng(1,4)});});let h=`<div style="text-align:center;font-size:13px;color:var(--mut);margin-bottom:10px;">📝 合同到期！报价如下：</div><div class="contract-panel">`;GS.contractOffers.forEach((o,i)=>{h+=`<div class="offer-card" onclick="acceptOffer(${i})" id="offer-${i}"><div class="oc-team"><img src="${teamLogo(o.team)}" style="width:24px;height:24px;vertical-align:middle;border-radius:50%;margin-right:4px;" onerror="this.style.display='none';">${o.team.emoji} ${o.team.name}</div><div class="oc-salary">💰 $${o.salary}M/年 × ${o.years}年</div><div class="oc-info">球队 OVR: ${o.team.ovr} | ${o.team.conf==='west'?'西部':'东部'}</div></div>`;});h+=`</div>`;document.getElementById('contract-content').innerHTML=h;document.getElementById('contract-card').scrollIntoView({behavior:'smooth'});}
 function acceptOffer(idx){document.querySelectorAll('.offer-card').forEach(c=>c.classList.remove('selected'));document.getElementById('offer-'+idx).classList.add('selected');const o=GS.contractOffers[idx];GS.curTeam=o.team;GS.contractYears=o.years;document.getElementById('contract-card').style.display='none';addLogEvent(`📝 签约 ${o.team.emoji} ${o.team.name}！${o.years}年 $${o.salary}M/年`,'milestone');showTrainingPanel();}
 
-function showTrainingPanel(){GS.trainingDone=!1;document.getElementById('train-card').style.display='';document.getElementById('btn-ns').style.display='none';const cats=['finishing','shooting','playmaking','defense','athletic'];let h=`<div style="text-align:center;font-size:13px;color:var(--mut);margin-bottom:10px;">🏋️ 休赛期专项训练 —— 选择一个类别集中提升</div><div class="train-options">`;cats.forEach(ck=>{const c=ATTR_CATS[ck];h+=`<div class="train-card" onclick="doTraining('${ck}')" id="train-${ck}"><div class="tc-icon">${c.label==='终结'?'🏀':c.label==='投射'?'🎯':c.label==='组织'?'🎪':c.label==='防守'?'🛡️':'⚡'}</div><div class="tc-name">${c.label}<br><span style="font-size:10px;color:var(--mut);">+3~5</span></div></div>`;});h+=`</div><div id="train-result-area"></div>`;document.getElementById('train-content').innerHTML=h;document.getElementById('train-card').scrollIntoView({behavior:'smooth'});}
-function doTraining(catKey){if(GS.trainingDone)return;GS.trainingDone=!0;document.querySelectorAll('.train-card').forEach(c=>c.classList.remove('selected'));document.getElementById('train-'+catKey).classList.add('selected');const cat=ATTR_CATS[catKey],bk=Math.random()<.15,boost=bk?rng(6,10):rng(2,5);cat.keys.forEach(k=>{if(GS.curAttrs[k]!==undefined)GS.curAttrs[k]=Math.min(99,GS.curAttrs[k]+boost);});GS.curOVR=calcOVR(GS.curAttrs,GS.playerPos);evolveTendencies();refreshRole();const area=document.getElementById('train-result-area');area.innerHTML=bk?`<div style="text-align:center;padding:12px;background:rgba(253,185,39,.08);border-radius:10px;border:1px solid rgba(253,185,39,.2);"><div style="font-size:28px;">💪</div><div style="font-weight:900;color:var(--gld);">突破！${cat.label}大幅提升</div><div style="font-size:13px;color:var(--mut);">${cat.label}属性 <b style="color:var(--grn);">+${boost}</b>！OVR: <b style="color:var(--gld);">${GS.curOVR}</b></div></div>`:`<div style="text-align:center;padding:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);"><div style="font-size:24px;">📈</div><div style="font-weight:700;color:var(--grn);">训练完成</div><div style="font-size:12px;color:var(--mut);">${cat.label}属性 <b style="color:var(--grn);">+${boost}</b>，OVR: <b style="color:var(--gld);">${GS.curOVR}</b></div></div>`;document.getElementById('btn-ns').style.display='';}
+function showTrainingPanel(){GS.trainingDone=!1;document.getElementById('train-card').style.display='';document.getElementById('btn-ns').style.display='none';const cats=['finishing','shooting','playmaking','defense','athletic'];let h=`<div style="text-align:center;font-size:13px;color:var(--mut);margin-bottom:10px;">🏋️ 休赛期专项训练 —— 选择一个类别集中提升（该类倾向越高提升越大）</div><div class="train-options">`;cats.forEach(ck=>{const c=ATTR_CATS[ck];h+=`<div class="train-card" onclick="doTraining('${ck}')" id="train-${ck}"><div class="tc-icon">${c.label==='终结'?'🏀':c.label==='投射'?'🎯':c.label==='组织'?'🎪':c.label==='防守'?'🛡️':'⚡'}</div><div class="tc-name">${c.label}<br><span style="font-size:10px;color:var(--mut);">+3~5</span></div></div>`;});h+=`</div><div id="train-result-area"></div>`;document.getElementById('train-content').innerHTML=h;document.getElementById('train-card').scrollIntoView({behavior:'smooth'});}
+function doTraining(catKey){if(GS.trainingDone)return;GS.trainingDone=!0;document.querySelectorAll('.train-card').forEach(c=>c.classList.remove('selected'));document.getElementById('train-'+catKey).classList.add('selected');const cat=ATTR_CATS[catKey];
+	let tendBonus=0;if(catKey==='finishing')tendBonus=(getTendAvg('driveTend')-.5)*3+(getTendAvg('shotTend')-.5)*1.5;else if(catKey==='shooting')tendBonus=(getTendAvg('shotTend')-.5)*3;else if(catKey==='playmaking')tendBonus=(getTendAvg('passTend')-.5)*3;else if(catKey==='defense')tendBonus=(getTendAvg('defTend')-.5)*3;else if(catKey==='athletic')tendBonus=(getTendAvg('playTend')-.5)*2;
+	const bk=Math.random()<.15,baseBoost=bk?rng(6,10):rng(2,5),boost=Math.round(clp(baseBoost+Math.round(tendBonus),bk?6:1,bk?14:8));cat.keys.forEach(k=>{if(GS.curAttrs[k]!==undefined)GS.curAttrs[k]=Math.min(99,GS.curAttrs[k]+boost);});GS.curOVR=calcOVR(GS.curAttrs,GS.playerPos);evolveTendencies();refreshRole();const area=document.getElementById('train-result-area');area.innerHTML=bk?`<div style="text-align:center;padding:12px;background:rgba(253,185,39,.08);border-radius:10px;border:1px solid rgba(253,185,39,.2);"><div style="font-size:28px;">💪</div><div style="font-weight:900;color:var(--gld);">突破！${cat.label}大幅提升</div><div style="font-size:13px;color:var(--mut);">${cat.label}属性 <b style="color:var(--grn);">+${boost}</b>！OVR: <b style="color:var(--gld);">${GS.curOVR}</b></div></div>`:`<div style="text-align:center;padding:12px;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);"><div style="font-size:24px;">📈</div><div style="font-weight:700;color:var(--grn);">训练完成</div><div style="font-size:12px;color:var(--mut);">${cat.label}属性 <b style="color:var(--grn);">+${boost}</b>，OVR: <b style="color:var(--gld);">${GS.curOVR}</b></div></div>`;document.getElementById('btn-ns').style.display='';}
 function evolveTendencies(){
 // Attribute-driven tendency evolution: blend current tendencies toward what attributes suggest
 if(!GS.playerTend)return;
@@ -804,7 +817,7 @@ target.doubleTeamTend=Math.round((a.helpDefense*.6+a.defConsistency*.3)+3);
 target.chargeTend=Math.round((a.hustle*.5+a.defConsistency*.3)+2);
 target.halfCourtTend=Math.round(100-(a.speed*.4+a.acceleration*.3)-5);
 // Blend: move 20% toward target each season
-const blend=.2;
+const blend=.25;
 Object.keys(target).forEach(k=>{
 if(GS.playerTend[k]!==undefined){
 GS.playerTend[k]=Math.round(clp(GS.playerTend[k]*(1-blend)+target[k]*blend,5,99));
@@ -812,9 +825,26 @@ GS.playerTend[k]=Math.round(clp(GS.playerTend[k]*(1-blend)+target[k]*blend,5,99)
 });
 }
 
-function startNextSeason(){GS.curSeason++;GS.seasonGames=[];GS.seasonW=0;GS.seasonL=0;GS.othRecords={};NBA_TEAMS.forEach(t=>{if(t.name!==GS.curTeam.name)GS.othRecords[t.name]={wins:0,losses:0};});GS.inPO=!1;GS.poDone=!1;GS.poType='';GS.poSeries=[];GS.poResults=[];GS.trainingDone=!1;GS.contractOffers=[];GS.injLeft=0;GS.nextOpp=null;GS.nextHome=!1;GS.playInStage=1;GS.playInSeed=0;GS.playInOppSeed=0;GS.playInSorted=null;GS.poMySeed=0;GS.poConfTop8=null;const age=GS.curAge+GS.curSeason-1;GS.curAttrs=ageProg(age);GS.curOVR=calcOVR(GS.curAttrs,GS.playerPos);evolveTendencies();updateTeamOVR();refreshRole();hidePOandTrainUI();document.getElementById('game-result-area').innerHTML='';document.getElementById('game-log-tbody').innerHTML='';document.getElementById('event-log').innerHTML=`<div style="color:var(--mut);text-align:center;">新赛季开始！合同剩余 ${GS.contractYears} 年</div>`;if(checkRetire(age,GS.curOVR)){GS.retired=!0;retirePlayer();return;}updateSeasonUI();updateMatchup();updateQuickStats();}
+function startNextSeason(){GS.curSeason++;GS.seasonGames=[];GS.seasonW=0;GS.seasonL=0;GS.othRecords={};NBA_TEAMS.forEach(t=>{if(t.name!==GS.curTeam.name)GS.othRecords[t.name]={wins:0,losses:0};});GS.inPO=!1;GS.poDone=!1;GS.poType='';GS.poSeries=[];GS.poResults=[];GS.trainingDone=!1;GS.contractOffers=[];GS.injLeft=0;GS.nextOpp=null;GS.nextHome=!1;GS.playInStage=1;GS.playInSeed=0;GS.playInOppSeed=0;GS.playInSorted=null;GS.poMySeed=0;GS.poConfTop8=null;const age=GS.curAge+GS.curSeason-1;const oldOVR=GS.curOVR;GS.curAttrs=seasonalProgression(age);GS.curOVR=calcOVR(GS.curAttrs,GS.playerPos);evolveTendencies();updateTeamOVR();refreshRole();const ovrDelta=GS.curOVR-oldOVR;hidePOandTrainUI();document.getElementById('game-result-area').innerHTML='';document.getElementById('game-log-tbody').innerHTML='';const growthMsg=ovrDelta>0?`<span style="color:var(--grn);">OVR ${oldOVR}->${GS.curOVR} (+${ovrDelta})</span>`:ovrDelta<0?`<span style="color:var(--red);">OVR ${oldOVR}->${GS.curOVR} (${ovrDelta})</span>`:`OVR ${GS.curOVR} (same)`;document.getElementById('event-log').innerHTML=`<div style="color:var(--mut);text-align:center;">新赛季开始！合同剩余 ${GS.contractYears} 年 · ${growthMsg}</div>`;if(checkRetire(age,GS.curOVR)){GS.retired=!0;retirePlayer();return;}updateSeasonUI();updateMatchup();updateQuickStats();}
 function hidePOandTrainUI(){document.getElementById('rs-card').style.display='';document.getElementById('po-card').style.display='none';document.getElementById('train-card').style.display='none';document.getElementById('contract-card').style.display='none';document.getElementById('se-card').style.display='none';document.getElementById('btn-nxt').style.display='';document.getElementById('btn-5').style.display='';document.getElementById('btn-20').style.display='';document.getElementById('btn-rest').style.display='';}
-function ageProg(age){const pv=GS.curAttrs||GS.baseAttrs,a={},pot=pv.potential||72;let gf;if(age<22)gf=.008;else if(age<25)gf=.015;else if(age<28)gf=.006;else if(age<30)gf=0;else if(age<32)gf=0;else if(age<34)gf=-.004;else if(age<36)gf=-.012;else if(age<38)gf=-.022;else gf=-.035;const pb=(pot-72)*.003;ALL_ATTRS.forEach(k=>{if(k==='potential'){if(age<26)a[k]=pv[k];else if(age<30)a[k]=Math.max(25,pv[k]-(age-25)*.5);else if(age<34)a[k]=Math.max(25,pv[k]-(2.5+(age-29)*1));else a[k]=Math.max(25,pv[k]-(7+(age-33)*2));return;}let v=pv[k];v+=Math.round(v*(gf+pb)*(.4+Math.random()*.4));if(['speed','acceleration','vertical','speedWithBall','lateralQuickness','agility'].includes(k)&&age>33)v-=Math.round((age-33)*.6);if(k==='stamina'&&age>34)v-=Math.round((age-34)*.8);if(['passAccuracy','midRange','postControl','freeThrow','passIQ','shotIQ','intangibles','leadership'].includes(k)&&age>28&&age<36)v+=Math.round(Math.min(3,(age-28)*.3));const maxA=Math.min(99,80+Math.round((pot-50)*.45));a[k]=clp(v,25,maxA);});return a;}
+function seasonalProgression(age){const pv=GS.curAttrs||GS.baseAttrs,a={},tend=GS.playerTend||{},pos=GS.playerPos,pot=pv.potential||72;
+	let af;if(age<21)af=.005;else if(age<24)af=.010;else if(age<27)af=.004;else if(age<30)af=0;else if(age<33)af=0;else if(age<35)af=-.003;else if(age<37)af=-.008;else if(age<39)af=-.016;else af=-.025;
+	const pb=(pot-72)*.002;
+	const pw=POS_EVO[pos]||POS_EVO.SF;const catSum=Object.values(pw).reduce((s,v)=>s+v,0);
+	function tAvg(tk){const c=TEND_CATS[tk];if(!c)return.5;return c.keys.reduce((s,k)=>s+Math.min(99,Math.max(1,tend[k]||50)),0)/(c.keys.length*100);}
+	const ts=tAvg('shotTend'),tdr=tAvg('driveTend'),tp=tAvg('passTend'),tde=tAvg('defTend'),tpl=tAvg('playTend');
+	function tBoost(ck){let b=0;Object.entries(TEND_EVO_BOOST).forEach(([tk,cw])=>{if(cw[ck]){const tv={shotTend:ts,driveTend:tdr,passTend:tp,defTend:tde,playTend:tpl}[tk];b+=tv*cw[ck];}});return clp(b,.15,1.8);}
+	ALL_ATTRS.forEach(k=>{
+	if(k==='potential'){if(age<26)a[k]=pv[k];else if(age<30)a[k]=Math.max(25,pv[k]-(age-25)*.4);else if(age<34)a[k]=Math.max(25,pv[k]-(2.0+(age-29)*.8));else a[k]=Math.max(25,pv[k]-(6+(age-33)*1.5));return;}
+	const ck=ATTR2CAT[k]||'mental',cw=(pw[ck]||.1)/catSum*6;
+	const tb=tBoost(ck),grow=af*cw*(1+tb)*(1+pb);
+	let v=pv[k];v+=Math.round(v*grow*(.5+Math.random()*.7));
+	if(['speed','acceleration','vertical','speedWithBall','lateralQuickness','agility'].includes(k)&&age>33)v-=Math.round((age-33)*.4);
+	if(k==='stamina'&&age>34)v-=Math.round((age-34)*.5);
+	if(['passAccuracy','midRange','postControl','freeThrow','passIQ','shotIQ','intangibles','leadership'].includes(k)&&age>28&&age<36)v+=Math.round(Math.min(2,(age-28)*.2));
+	const maxA=Math.min(99,80+Math.round((pot-50)*.45));a[k]=clp(v,25,maxA);
+	});return a;}
+
 function checkRetire(age,ovr){if(age>=42)return!0;if(age>=40&&ovr<70)return Math.random()<.55;if(age>=38&&ovr<65)return Math.random()<.45;if(age>=37&&ovr<58)return Math.random()<.5;return!1;}
 async function simGames(n){for(let i=0;i<n&&!GS.inPO&&!GS.poDone&&GS.seasonGames.length<82;i++){simOneGame();await new Promise(r=>setTimeout(r,80));}}
 async function simRestOfSeason(){await simGames(82-GS.seasonGames.length);}
