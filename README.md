@@ -4,7 +4,7 @@
 
 ## 🎮 立即游玩
 
-### 👉 https://yyc200398.github.io/nba-career-simulator/ 👈
+### 👉 https://yyc200398.github.io/nba-career-simulator/index.html 👈
 
 ---
 
