@@ -90,16 +90,20 @@ body{background-image:radial-gradient(ellipse at 50% 0%,rgba(29,66,138,.35) 0%,t
 
 <div id="screen-summary" class="screen">
 <div class="card"><div class="card-title">🏀 你的自建球员</div><div class="player-card" id="player-card"></div>
-<div style="text-align:center;font-size:10px;color:var(--mut);margin-top:-6px;">💡 抽取的属性/倾向继承球星原值的95%，潜力和倾向100%继承</div>
-<div class="btn-group"><button class="btn btn-gold" onclick="goToTeamSelect()">👕 选择球队</button><button class="btn btn-danger btn-sm" onclick="restartGame()">🔄 重新创建</button></div>
+<div style="text-align:center;font-size:10px;color:var(--mut);margin-top:-6px;">💡 抽取的属性/倾向继承球星原值的95%，未抽取的类别使用随机基础值</div>
+<div class="btn-group"><button class="btn btn-gold" onclick="goToTeamSelect()">🚀 选择球队</button><button class="btn btn-danger btn-sm" onclick="restartGame()">🔄 重新创建</button></div>
 </div>
 </div>
 
 <div id="screen-team" class="screen">
-<div class="card"><div class="card-title">👕 选择你的第一支球队</div>
-<div style="text-align:center;font-size:12px;color:var(--mut);margin-bottom:12px;">根据你的 OVR，部分球队可能不会给你合同</div>
-<div id="team-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
-<div class="btn-group" style="margin-top:16px;"><button class="btn btn-gold" id="btn-team-confirm" onclick="confirmTeamSelection()">✅ 确认加入</button></div>
+<div class="card"><div class="card-title">🏀 选择你的球队</div>
+<div class="player-card" id="team-player-card"></div>
+<div style="font-size:12px;color:var(--mut);text-align:center;margin:4px 0;" id="team-role-info"></div>
+<div style="text-align:center;font-size:10px;color:var(--mut);margin-top:-6px;">💡 球队OVR越强，成为核心的难度越大</div>
+<div style="overflow-x:auto;max-height:450px;overflow-y:auto;margin:8px 0;">
+<table class="std-table"><thead><tr><th>选择</th><th>球队</th><th>OVR</th><th>分区</th><th>角色定位</th><th>说明</th></tr></thead><tbody id="team-select-tbody"></tbody></table>
+</div>
+<div class="btn-group"><button class="btn btn-outline btn-sm" onclick="showScreen('screen-summary')">⬅ 返回</button><button class="btn btn-gold" id="btn-confirm-team" disabled onclick="confirmTeamSelection()">✅ 确认签约</button></div>
 </div>
 </div>
 
@@ -134,8 +138,6 @@ body{background-image:radial-gradient(ellipse at 50% 0%,rgba(29,66,138,.35) 0%,t
 <div id="tab-content"></div></div></div>
 </div>
 <script>
-window.onerror=function(m,u,l){document.body.innerHTML+='<div style="position:fixed;bottom:10px;left:10px;right:10px;background:red;color:#fff;padding:10px;z-index:9999;font-size:12px;border-radius:8px;">JS ERROR line '+l+': '+m+'</div>';return false;};
-
 // ==================== DATA ====================
 const ATTR_CATS={finishing:{label:'终结',color:'#C8102E',keys:['closeShot','drivingLayup','drivingDunk','standingDunk','postControl','postFade','drawFoul','handsRating']},shooting:{label:'投射',color:'#00E676',keys:['midRange','threePoint','freeThrow','offDribbleShot','catchShoot','contestedShot','shotIQ']},playmaking:{label:'组织',color:'#00E5FF',keys:['passAccuracy','ballHandle','speedWithBall','passVision','passIQ','dimerTendency']},defense:{label:'防守',color:'#1D428A',keys:['interiorDef','perimeterDef','steal','block','offRebound','defRebound','helpDefense','defConsistency']},athletic:{label:'运动',color:'#FF9100',keys:['speed','acceleration','strength','vertical','stamina','hustle','lateralQuickness','agility']},mental:{label:'心理',color:'#B388FF',keys:['offConsistency','clutchFactor','intangibles','workEthic','injuryResistance','leadership']},potential:{label:'潜力',color:'#FFD700',keys:['potential']}};
 const TEND_CATS={shotTend:{label:'投篮倾向',color:'#FF5252',keys:['shotTendency','closeShotTend','midRangeTend','threePointTend','drivingShotTend','pullUpTend','catchShootTend','stepBackTend','postUpTend','contestedShotTend']},driveTend:{label:'突破倾向',color:'#FF9100',keys:['driveTendency','driveToBasketTend','driveAndKickTend','isoTendency','pickAndRollTend','spotUpTend']},passTend:{label:'传球倾向',color:'#00E5FF',keys:['passToOpenTend','touchPassTend','flashyPassTend','alleyOopTend','dimerTendency2']},defTend:{label:'防守倾向',color:'#1D428A',keys:['defPressureTend','stealTendency','blockTendency','helpDefTend','doubleTeamTend','chargeTend']},playTend:{label:'比赛倾向',color:'#B388FF',keys:['fastBreakTend','halfCourtTend','clutchTendency','tempoPusher','foulDrawingTend','offensiveReboundTend']}};
@@ -155,10 +157,10 @@ const tpl=pos==='PG'?{closeShot:82,drivingLayup:88,drivingDunk:58,standingDunk:3
 :pos==='SF'?{closeShot:85,drivingLayup:82,drivingDunk:85,standingDunk:54,postControl:64,postFade:60,drawFoul:70,handsRating:80,midRange:82,threePoint:80,freeThrow:80,offDribbleShot:76,catchShoot:80,contestedShot:64,shotIQ:76,passAccuracy:70,ballHandle:80,speedWithBall:74,passVision:68,passIQ:66,dimerTendency:54,interiorDef:62,perimeterDef:76,steal:68,block:52,offRebound:50,defRebound:62,helpDefense:62,defConsistency:70,speed:80,acceleration:82,strength:70,vertical:74,stamina:86,hustle:70,lateralQuickness:74,agility:78,offConsistency:76,clutchFactor:80,intangibles:70,workEthic:74,injuryResistance:78,leadership:64,potential:84}
 :pos==='PF'?{closeShot:88,drivingLayup:70,drivingDunk:84,standingDunk:74,postControl:78,postFade:64,drawFoul:64,handsRating:72,midRange:74,threePoint:60,freeThrow:74,offDribbleShot:54,catchShoot:64,contestedShot:54,shotIQ:70,passAccuracy:60,ballHandle:64,speedWithBall:56,passVision:56,passIQ:56,dimerTendency:44,interiorDef:78,perimeterDef:64,steal:50,block:70,offRebound:70,defRebound:80,helpDefense:70,defConsistency:74,speed:68,acceleration:70,strength:84,vertical:70,stamina:84,hustle:72,lateralQuickness:60,agility:66,offConsistency:70,clutchFactor:72,intangibles:64,workEthic:70,injuryResistance:78,leadership:60,potential:84}
 :{closeShot:90,drivingLayup:60,drivingDunk:78,standingDunk:84,postControl:84,postFade:66,drawFoul:58,handsRating:66,midRange:60,threePoint:44,freeThrow:68,offDribbleShot:42,catchShoot:52,contestedShot:50,shotIQ:60,passAccuracy:50,ballHandle:50,speedWithBall:42,passVision:46,passIQ:46,dimerTendency:36,interiorDef:82,perimeterDef:50,steal:40,block:80,offRebound:78,defRebound:88,helpDefense:76,defConsistency:76,speed:54,acceleration:56,strength:90,vertical:64,stamina:80,hustle:66,lateralQuickness:42,agility:50,offConsistency:66,clutchFactor:68,intangibles:60,workEthic:68,injuryResistance:72,leadership:56,potential:82};
-const a=Object.assign({},tpl);Object.assign(a,h);if(!a.potential)a.potential=Math.round((a.offConsistency+72)/2);
+const a={...tpl};Object.assign(a,h);if(!a.potential)a.potential=Math.round((a.offConsistency+72)/2);
 const tend=t||(ST[name]?ST[name]:mkT(pos,null));
 return{name,pos,era,_ovr:ovr,...a,tendencies:tend};}
-function mkT(pos,highlights){const t=Object.assign({},DEF_TENDS[pos]);if(highlights)Object.assign(t,highlights);return t;}
+function mkT(pos,highlights){const t={...DEF_TENDS[pos]};if(highlights)Object.assign(t,highlights);return t;}
 
 // NBA 2K26 Official Player Ratings (source: 2K Sports Aug 2025)
 const ST={"Nikola Jokic":{shotTendency:72,closeShotTend:85,midRangeTend:75,threePointTend:62,drivingShotTend:45,pullUpTend:55,catchShootTend:75,stepBackTend:42,postUpTend:82,contestedShotTend:62,driveTendency:42,driveToBasketTend:48,driveAndKickTend:78,isoTendency:52,pickAndRollTend:72,spotUpTend:62,passToOpenTend:95,touchPassTend:85,flashyPassTend:72,alleyOopTend:58,dimerTendency2:92,defPressureTend:55,stealTendency:60,blockTendency:52,helpDefTend:68,doubleTeamTend:35,chargeTend:18,fastBreakTend:55,halfCourtTend:72,clutchTendency:85,tempoPusher:58,foulDrawingTend:52,offensiveReboundTend:55},"Shai Gilgeous-Alexander":{shotTendency:82,closeShotTend:78,midRangeTend:85,threePointTend:68,drivingShotTend:82,pullUpTend:78,catchShootTend:65,stepBackTend:72,postUpTend:32,contestedShotTend:75,driveTendency:88,driveToBasketTend:92,driveAndKickTend:65,isoTendency:85,pickAndRollTend:82,spotUpTend:52,passToOpenTend:78,touchPassTend:68,flashyPassTend:55,alleyOopTend:42,dimerTendency2:72,defPressureTend:75,stealTendency:85,blockTendency:45,helpDefTend:62,doubleTeamTend:22,chargeTend:15,fastBreakTend:82,halfCourtTend:62,clutchTendency:88,tempoPusher:78,foulDrawingTend:82,offensiveReboundTend:32},"Giannis Antetokounmpo":{shotTendency:65,closeShotTend:95,midRangeTend:42,threePointTend:28,drivingShotTend:72,pullUpTend:32,catchShootTend:38,stepBackTend:22,postUpTend:48,contestedShotTend:78,driveTendency:95,driveToBasketTend:98,driveAndKickTend:55,isoTendency:75,pickAndRollTend:72,spotUpTend:28,passToOpenTend:72,touchPassTend:55,flashyPassTend:38,alleyOopTend:62,dimerTendency2:68,defPressureTend:82,stealTendency:68,blockTendency:85,helpDefTend:78,doubleTeamTend:28,chargeTend:22,fastBreakTend:92,halfCourtTend:55,clutchTendency:85,tempoPusher:88,foulDrawingTend:88,offensiveReboundTend:65},"Luka Doncic":{shotTendency:92,closeShotTend:75,midRangeTend:78,threePointTend:82,drivingShotTend:78,pullUpTend:82,catchShootTend:72,stepBackTend:85,postUpTend:62,contestedShotTend:85,driveTendency:78,driveToBasketTend:82,driveAndKickTend:75,isoTendency:88,pickAndRollTend:85,spotUpTend:62,passToOpenTend:90,touchPassTend:78,flashyPassTend:68,alleyOopTend:58,dimerTendency2:85,defPressureTend:42,stealTendency:52,blockTendency:28,helpDefTend:42,doubleTeamTend:12,chargeTend:10,fastBreakTend:68,halfCourtTend:72,clutchTendency:95,tempoPusher:72,foulDrawingTend:72,offensiveReboundTend:32},"Victor Wembanyama":{shotTendency:62,closeShotTend:55,midRangeTend:65,threePointTend:58,drivingShotTend:42,pullUpTend:52,catchShootTend:62,stepBackTend:38,postUpTend:45,contestedShotTend:62,driveTendency:38,driveToBasketTend:42,driveAndKickTend:42,isoTendency:32,pickAndRollTend:48,spotUpTend:58,passToOpenTend:62,touchPassTend:48,flashyPassTend:35,alleyOopTend:58,dimerTendency2:48,defPressureTend:82,stealTendency:58,blockTendency:95,helpDefTend:85,doubleTeamTend:38,chargeTend:28,fastBreakTend:48,halfCourtTend:65,clutchTendency:72,tempoPusher:45,foulDrawingTend:45,offensiveReboundTend:55},"Stephen Curry":{shotTendency:95,closeShotTend:75,midRangeTend:82,threePointTend:99,drivingShotTend:72,pullUpTend:95,catchShootTend:99,stepBackTend:88,postUpTend:15,contestedShotTend:88,driveTendency:65,driveToBasketTend:68,driveAndKickTend:72,isoTendency:62,pickAndRollTend:75,spotUpTend:92,passToOpenTend:85,touchPassTend:78,flashyPassTend:58,alleyOopTend:32,dimerTendency2:68,defPressureTend:52,stealTendency:62,blockTendency:15,helpDefTend:45,doubleTeamTend:8,chargeTend:5,fastBreakTend:85,halfCourtTend:58,clutchTendency:99,tempoPusher:82,foulDrawingTend:52,offensiveReboundTend:22},"LeBron James":{shotTendency:78,closeShotTend:92,midRangeTend:72,threePointTend:68,drivingShotTend:82,pullUpTend:68,catchShootTend:72,stepBackTend:62,postUpTend:65,contestedShotTend:82,driveTendency:88,driveToBasketTend:92,driveAndKickTend:85,isoTendency:82,pickAndRollTend:85,spotUpTend:58,passToOpenTend:92,touchPassTend:78,flashyPassTend:62,alleyOopTend:55,dimerTendency2:85,defPressureTend:68,stealTendency:62,blockTendency:58,helpDefTend:68,doubleTeamTend:18,chargeTend:15,fastBreakTend:88,halfCourtTend:62,clutchTendency:97,tempoPusher:82,foulDrawingTend:75,offensiveReboundTend:42},"Jayson Tatum":{shotTendency:82,closeShotTend:78,midRangeTend:82,threePointTend:78,drivingShotTend:78,pullUpTend:75,catchShootTend:82,stepBackTend:72,postUpTend:55,contestedShotTend:75,driveTendency:78,driveToBasketTend:82,driveAndKickTend:65,isoTendency:75,pickAndRollTend:72,spotUpTend:72,passToOpenTend:72,touchPassTend:62,flashyPassTend:42,alleyOopTend:42,dimerTendency2:62,defPressureTend:72,stealTendency:65,blockTendency:55,helpDefTend:68,doubleTeamTend:25,chargeTend:18,fastBreakTend:78,halfCourtTend:68,clutchTendency:88,tempoPusher:72,foulDrawingTend:72,offensiveReboundTend:38},"Anthony Edwards":{shotTendency:85,closeShotTend:72,midRangeTend:75,threePointTend:78,drivingShotTend:82,pullUpTend:72,catchShootTend:72,stepBackTend:68,postUpTend:28,contestedShotTend:78,driveTendency:92,driveToBasketTend:95,driveAndKickTend:48,isoTendency:78,pickAndRollTend:72,spotUpTend:62,passToOpenTend:62,touchPassTend:55,flashyPassTend:48,alleyOopTend:58,dimerTendency2:52,defPressureTend:68,stealTendency:65,blockTendency:42,helpDefTend:55,doubleTeamTend:15,chargeTend:12,fastBreakTend:90,halfCourtTend:58,clutchTendency:88,tempoPusher:82,foulDrawingTend:72,offensiveReboundTend:35},"Jalen Brunson":{shotTendency:85,closeShotTend:78,midRangeTend:88,threePointTend:75,drivingShotTend:78,pullUpTend:82,catchShootTend:75,stepBackTend:72,postUpTend:38,contestedShotTend:72,driveTendency:82,driveToBasketTend:85,driveAndKickTend:65,isoTendency:82,pickAndRollTend:85,spotUpTend:62,passToOpenTend:78,touchPassTend:68,flashyPassTend:48,alleyOopTend:28,dimerTendency2:75,defPressureTend:48,stealTendency:45,blockTendency:18,helpDefTend:42,doubleTeamTend:10,chargeTend:8,fastBreakTend:72,halfCourtTend:68,clutchTendency:95,tempoPusher:72,foulDrawingTend:78,offensiveReboundTend:28},"Kevin Durant":{shotTendency:88,closeShotTend:88,midRangeTend:95,threePointTend:82,drivingShotTend:72,pullUpTend:92,catchShootTend:88,stepBackTend:78,postUpTend:72,contestedShotTend:92,driveTendency:68,driveToBasketTend:72,driveAndKickTend:55,isoTendency:82,pickAndRollTend:58,spotUpTend:82,passToOpenTend:68,touchPassTend:58,flashyPassTend:42,alleyOopTend:38,dimerTendency2:55,defPressureTend:62,stealTendency:55,blockTendency:62,helpDefTend:58,doubleTeamTend:22,chargeTend:15,fastBreakTend:68,halfCourtTend:72,clutchTendency:95,tempoPusher:62,foulDrawingTend:68,offensiveReboundTend:32},"Anthony Davis":{shotTendency:58,closeShotTend:78,midRangeTend:68,threePointTend:38,drivingShotTend:55,pullUpTend:42,catchShootTend:58,stepBackTend:28,postUpTend:62,contestedShotTend:62,driveTendency:48,driveToBasketTend:55,driveAndKickTend:38,isoTendency:38,pickAndRollTend:55,spotUpTend:48,passToOpenTend:52,touchPassTend:42,flashyPassTend:25,alleyOopTend:58,dimerTendency2:42,defPressureTend:78,stealTendency:62,blockTendency:88,helpDefTend:78,doubleTeamTend:42,chargeTend:28,fastBreakTend:55,halfCourtTend:68,clutchTendency:78,tempoPusher:48,foulDrawingTend:62,offensiveReboundTend:58},"Devin Booker":{shotTendency:88,closeShotTend:78,midRangeTend:92,threePointTend:82,drivingShotTend:72,pullUpTend:82,catchShootTend:85,stepBackTend:68,postUpTend:38,contestedShotTend:78,driveTendency:68,driveToBasketTend:72,driveAndKickTend:55,isoTendency:72,pickAndRollTend:68,spotUpTend:78,passToOpenTend:65,touchPassTend:58,flashyPassTend:45,alleyOopTend:38,dimerTendency2:58,defPressureTend:52,stealTendency:48,blockTendency:28,helpDefTend:45,doubleTeamTend:15,chargeTend:12,fastBreakTend:72,halfCourtTend:65,clutchTendency:90,tempoPusher:68,foulDrawingTend:68,offensiveReboundTend:28},"Kyrie Irving":{shotTendency:82,closeShotTend:85,midRangeTend:88,threePointTend:78,drivingShotTend:82,pullUpTend:88,catchShootTend:78,stepBackTend:82,postUpTend:28,contestedShotTend:75,driveTendency:82,driveToBasketTend:88,driveAndKickTend:55,isoTendency:92,pickAndRollTend:72,spotUpTend:68,passToOpenTend:68,touchPassTend:65,flashyPassTend:72,alleyOopTend:38,dimerTendency2:62,defPressureTend:48,stealTendency:55,blockTendency:18,helpDefTend:38,doubleTeamTend:8,chargeTend:8,fastBreakTend:72,halfCourtTend:62,clutchTendency:95,tempoPusher:75,foulDrawingTend:58,offensiveReboundTend:25},"Joel Embiid":{shotTendency:72,closeShotTend:88,midRangeTend:78,threePointTend:58,drivingShotTend:42,pullUpTend:45,catchShootTend:65,stepBackTend:32,postUpTend:88,contestedShotTend:72,driveTendency:42,driveToBasketTend:52,driveAndKickTend:32,isoTendency:55,pickAndRollTend:48,spotUpTend:55,passToOpenTend:55,touchPassTend:42,flashyPassTend:22,alleyOopTend:48,dimerTendency2:38,defPressureTend:72,stealTendency:52,blockTendency:82,helpDefTend:68,doubleTeamTend:38,chargeTend:25,fastBreakTend:38,halfCourtTend:72,clutchTendency:78,tempoPusher:42,foulDrawingTend:78,offensiveReboundTend:62},"Kawhi Leonard":{shotTendency:78,closeShotTend:82,midRangeTend:92,threePointTend:72,drivingShotTend:62,pullUpTend:78,catchShootTend:82,stepBackTend:62,postUpTend:58,contestedShotTend:85,driveTendency:62,driveToBasketTend:68,driveAndKickTend:45,isoTendency:72,pickAndRollTend:55,spotUpTend:72,passToOpenTend:58,touchPassTend:48,flashyPassTend:32,alleyOopTend:32,dimerTendency2:45,defPressureTend:88,stealTendency:85,blockTendency:52,helpDefTend:78,doubleTeamTend:28,chargeTend:22,fastBreakTend:62,halfCourtTend:72,clutchTendency:95,tempoPusher:58,foulDrawingTend:58,offensiveReboundTend:38},"Donovan Mitchell":{shotTendency:85,closeShotTend:72,midRangeTend:78,threePointTend:78,drivingShotTend:78,pullUpTend:72,catchShootTend:75,stepBackTend:68,postUpTend:25,contestedShotTend:72,driveTendency:88,driveToBasketTend:92,driveAndKickTend:45,isoTendency:75,pickAndRollTend:72,spotUpTend:62,passToOpenTend:58,touchPassTend:52,flashyPassTend:42,alleyOopTend:45,dimerTendency2:52,defPressureTend:62,stealTendency:55,blockTendency:32,helpDefTend:48,doubleTeamTend:15,chargeTend:12,fastBreakTend:82,halfCourtTend:62,clutchTendency:88,tempoPusher:78,foulDrawingTend:68,offensiveReboundTend:32},"Ja Morant":{shotTendency:78,closeShotTend:72,midRangeTend:65,threePointTend:55,drivingShotTend:82,pullUpTend:58,catchShootTend:55,stepBackTend:52,postUpTend:15,contestedShotTend:62,driveTendency:95,driveToBasketTend:98,driveAndKickTend:62,isoTendency:78,pickAndRollTend:82,spotUpTend:45,passToOpenTend:72,touchPassTend:62,flashyPassTend:62,alleyOopTend:72,dimerTendency2:72,defPressureTend:48,stealTendency:52,blockTendency:18,helpDefTend:38,doubleTeamTend:10,chargeTend:8,fastBreakTend:92,halfCourtTend:48,clutchTendency:82,tempoPusher:92,foulDrawingTend:72,offensiveReboundTend:32},"Damian Lillard":{shotTendency:88,closeShotTend:72,midRangeTend:82,threePointTend:92,drivingShotTend:72,pullUpTend:88,catchShootTend:85,stepBackTend:82,postUpTend:18,contestedShotTend:82,driveTendency:68,driveToBasketTend:72,driveAndKickTend:58,isoTendency:72,pickAndRollTend:78,spotUpTend:78,passToOpenTend:72,touchPassTend:62,flashyPassTend:48,alleyOopTend:35,dimerTendency2:65,defPressureTend:42,stealTendency:48,blockTendency:18,helpDefTend:38,doubleTeamTend:10,chargeTend:8,fastBreakTend:72,halfCourtTend:62,clutchTendency:98,tempoPusher:72,foulDrawingTend:68,offensiveReboundTend:22},"Jaylen Brown":{shotTendency:78,closeShotTend:72,midRangeTend:72,threePointTend:68,drivingShotTend:78,pullUpTend:62,catchShootTend:68,stepBackTend:58,postUpTend:35,contestedShotTend:68,driveTendency:82,driveToBasketTend:88,driveAndKickTend:42,isoTendency:62,pickAndRollTend:58,spotUpTend:62,passToOpenTend:55,touchPassTend:48,flashyPassTend:38,alleyOopTend:48,dimerTendency2:45,defPressureTend:72,stealTendency:58,blockTendency:38,helpDefTend:58,doubleTeamTend:18,chargeTend:15,fastBreakTend:82,halfCourtTend:62,clutchTendency:82,tempoPusher:72,foulDrawingTend:65,offensiveReboundTend:38},"Jimmy Butler":{shotTendency:65,closeShotTend:78,midRangeTend:72,threePointTend:42,drivingShotTend:68,pullUpTend:58,catchShootTend:62,stepBackTend:42,postUpTend:55,contestedShotTend:72,driveTendency:72,driveToBasketTend:78,driveAndKickTend:58,isoTendency:68,pickAndRollTend:62,spotUpTend:52,passToOpenTend:65,touchPassTend:55,flashyPassTend:32,alleyOopTend:32,dimerTendency2:58,defPressureTend:78,stealTendency:82,blockTendency:42,helpDefTend:72,doubleTeamTend:25,chargeTend:22,fastBreakTend:65,halfCourtTend:68,clutchTendency:95,tempoPusher:58,foulDrawingTend:82,offensiveReboundTend:52},"Tyrese Haliburton":{shotTendency:72,closeShotTend:52,midRangeTend:68,threePointTend:78,drivingShotTend:52,pullUpTend:68,catchShootTend:75,stepBackTend:58,postUpTend:12,contestedShotTend:48,driveTendency:58,driveToBasketTend:62,driveAndKickTend:82,isoTendency:48,pickAndRollTend:78,spotUpTend:68,passToOpenTend:95,touchPassTend:85,flashyPassTend:68,alleyOopTend:52,dimerTendency2:95,defPressureTend:38,stealTendency:48,blockTendency:22,helpDefTend:38,doubleTeamTend:10,chargeTend:8,fastBreakTend:78,halfCourtTend:55,clutchTendency:78,tempoPusher:78,foulDrawingTend:42,offensiveReboundTend:22},"Trae Young":{shotTendency:88,closeShotTend:58,midRangeTend:72,threePointTend:88,drivingShotTend:72,pullUpTend:82,catchShootTend:78,stepBackTend:78,postUpTend:8,contestedShotTend:62,driveTendency:72,driveToBasketTend:75,driveAndKickTend:72,isoTendency:75,pickAndRollTend:82,spotUpTend:72,passToOpenTend:88,touchPassTend:78,flashyPassTend:72,alleyOopTend:48,dimerTendency2:88,defPressureTend:28,stealTendency:35,blockTendency:12,helpDefTend:22,doubleTeamTend:5,chargeTend:5,fastBreakTend:75,halfCourtTend:58,clutchTendency:92,tempoPusher:78,foulDrawingTend:72,offensiveReboundTend:18},"Zion Williamson":{shotTendency:72,closeShotTend:92,midRangeTend:38,threePointTend:18,drivingShotTend:82,pullUpTend:22,catchShootTend:28,stepBackTend:12,postUpTend:48,contestedShotTend:78,driveTendency:95,driveToBasketTend:98,driveAndKickTend:32,isoTendency:72,pickAndRollTend:62,spotUpTend:22,passToOpenTend:48,touchPassTend:38,flashyPassTend:28,alleyOopTend:68,dimerTendency2:38,defPressureTend:38,stealTendency:42,blockTendency:48,helpDefTend:38,doubleTeamTend:15,chargeTend:18,fastBreakTend:82,halfCourtTend:48,clutchTendency:72,tempoPusher:82,foulDrawingTend:82,offensiveReboundTend:62},"Bam Adebayo":{shotTendency:48,closeShotTend:68,midRangeTend:58,threePointTend:25,drivingShotTend:42,pullUpTend:32,catchShootTend:45,stepBackTend:18,postUpTend:45,contestedShotTend:48,driveTendency:38,driveToBasketTend:48,driveAndKickTend:42,isoTendency:28,pickAndRollTend:48,spotUpTend:42,passToOpenTend:55,touchPassTend:42,flashyPassTend:22,alleyOopTend:55,dimerTendency2:45,defPressureTend:78,stealTendency:58,blockTendency:72,helpDefTend:78,doubleTeamTend:42,chargeTend:25,fastBreakTend:42,halfCourtTend:68,clutchTendency:68,tempoPusher:38,foulDrawingTend:52,offensiveReboundTend:58},"Karl-Anthony Towns":{shotTendency:75,closeShotTend:78,midRangeTend:78,threePointTend:75,drivingShotTend:52,pullUpTend:55,catchShootTend:78,stepBackTend:42,postUpTend:62,contestedShotTend:55,driveTendency:42,driveToBasketTend:52,driveAndKickTend:42,isoTendency:42,pickAndRollTend:55,spotUpTend:68,passToOpenTend:58,touchPassTend:42,flashyPassTend:28,alleyOopTend:42,dimerTendency2:42,defPressureTend:48,stealTendency:42,blockTendency:55,helpDefTend:52,doubleTeamTend:28,chargeTend:18,fastBreakTend:42,halfCourtTend:62,clutchTendency:68,tempoPusher:38,foulDrawingTend:58,offensiveReboundTend:55},"Paolo Banchero":{shotTendency:72,closeShotTend:75,midRangeTend:68,threePointTend:55,drivingShotTend:68,pullUpTend:58,catchShootTend:58,stepBackTend:45,postUpTend:58,contestedShotTend:62,driveTendency:68,driveToBasketTend:75,driveAndKickTend:52,isoTendency:62,pickAndRollTend:62,spotUpTend:52,passToOpenTend:58,touchPassTend:48,flashyPassTend:35,alleyOopTend:42,dimerTendency2:52,defPressureTend:58,stealTendency:48,blockTendency:48,helpDefTend:55,doubleTeamTend:25,chargeTend:18,fastBreakTend:62,halfCourtTend:62,clutchTendency:78,tempoPusher:58,foulDrawingTend:68,offensiveReboundTend:48},"James Harden":{shotTendency:82,closeShotTend:68,midRangeTend:72,threePointTend:82,drivingShotTend:72,pullUpTend:82,catchShootTend:72,stepBackTend:88,postUpTend:32,contestedShotTend:72,driveTendency:78,driveToBasketTend:82,driveAndKickTend:72,isoTendency:85,pickAndRollTend:78,spotUpTend:68,passToOpenTend:82,touchPassTend:68,flashyPassTend:55,alleyOopTend:42,dimerTendency2:82,defPressureTend:42,stealTendency:52,blockTendency:32,helpDefTend:42,doubleTeamTend:15,chargeTend:15,fastBreakTend:65,halfCourtTend:62,clutchTendency:72,tempoPusher:72,foulDrawingTend:88,offensiveReboundTend:28},"Michael Jordan":{shotTendency:96,closeShotTend:92,midRangeTend:98,threePointTend:55,drivingShotTend:95,pullUpTend:95,catchShootTend:82,stepBackTend:85,postUpTend:72,contestedShotTend:98,driveTendency:92,driveToBasketTend:98,driveAndKickTend:55,isoTendency:92,pickAndRollTend:68,spotUpTend:68,passToOpenTend:72,touchPassTend:58,flashyPassTend:55,alleyOopTend:48,dimerTendency2:68,defPressureTend:95,stealTendency:92,blockTendency:62,helpDefTend:78,doubleTeamTend:28,chargeTend:20,fastBreakTend:95,halfCourtTend:62,clutchTendency:99,tempoPusher:88,foulDrawingTend:85,offensiveReboundTend:42},"Kobe Bryant":{shotTendency:95,closeShotTend:88,midRangeTend:95,threePointTend:72,drivingShotTend:92,pullUpTend:95,catchShootTend:82,stepBackTend:88,postUpTend:82,contestedShotTend:95,driveTendency:88,driveToBasketTend:92,driveAndKickTend:48,isoTendency:92,pickAndRollTend:62,spotUpTend:72,passToOpenTend:62,touchPassTend:55,flashyPassTend:58,alleyOopTend:48,dimerTendency2:62,defPressureTend:88,stealTendency:78,blockTendency:48,helpDefTend:68,doubleTeamTend:25,chargeTend:18,fastBreakTend:88,halfCourtTend:62,clutchTendency:99,tempoPusher:82,foulDrawingTend:82,offensiveReboundTend:38},"Magic Johnson":{shotTendency:55,closeShotTend:72,midRangeTend:65,threePointTend:42,drivingShotTend:55,pullUpTend:52,catchShootTend:58,stepBackTend:35,postUpTend:52,contestedShotTend:58,driveTendency:65,driveToBasketTend:72,driveAndKickTend:85,isoTendency:52,pickAndRollTend:78,spotUpTend:52,passToOpenTend:99,touchPassTend:95,flashyPassTend:92,alleyOopTend:72,dimerTendency2:99,defPressureTend:52,stealTendency:72,blockTendency:32,helpDefTend:55,doubleTeamTend:15,chargeTend:12,fastBreakTend:92,halfCourtTend:52,clutchTendency:95,tempoPusher:92,foulDrawingTend:58,offensiveReboundTend:42},"Larry Bird":{shotTendency:88,closeShotTend:78,midRangeTend:98,threePointTend:88,drivingShotTend:58,pullUpTend:78,catchShootTend:95,stepBackTend:62,postUpTend:68,contestedShotTend:92,driveTendency:45,driveToBasketTend:52,driveAndKickTend:78,isoTendency:58,pickAndRollTend:55,spotUpTend:85,passToOpenTend:92,touchPassTend:85,flashyPassTend:75,alleyOopTend:42,dimerTendency2:88,defPressureTend:65,stealTendency:68,blockTendency:45,helpDefTend:62,doubleTeamTend:22,chargeTend:15,fastBreakTend:62,halfCourtTend:72,clutchTendency:98,tempoPusher:58,foulDrawingTend:58,offensiveReboundTend:45},"Shaquille ONeal":{shotTendency:68,closeShotTend:98,midRangeTend:22,threePointTend:8,drivingShotTend:38,pullUpTend:12,catchShootTend:28,stepBackTend:8,postUpTend:95,contestedShotTend:85,driveTendency:48,driveToBasketTend:55,driveAndKickTend:25,isoTendency:48,pickAndRollTend:42,spotUpTend:18,passToOpenTend:42,touchPassTend:32,flashyPassTend:18,alleyOopTend:48,dimerTendency2:32,defPressureTend:72,stealTendency:35,blockTendency:85,helpDefTend:62,doubleTeamTend:38,chargeTend:22,fastBreakTend:42,halfCourtTend:72,clutchTendency:82,tempoPusher:38,foulDrawingTend:72,offensiveReboundTend:82},"Hakeem Olajuwon":{shotTendency:72,closeShotTend:92,midRangeTend:78,threePointTend:18,drivingShotTend:48,pullUpTend:38,catchShootTend:52,stepBackTend:28,postUpTend:95,contestedShotTend:78,driveTendency:42,driveToBasketTend:48,driveAndKickTend:32,isoTendency:48,pickAndRollTend:42,spotUpTend:42,passToOpenTend:48,touchPassTend:38,flashyPassTend:25,alleyOopTend:38,dimerTendency2:38,defPressureTend:88,stealTendency:78,blockTendency:98,helpDefTend:88,doubleTeamTend:42,chargeTend:28,fastBreakTend:48,halfCourtTend:72,clutchTendency:92,tempoPusher:42,foulDrawingTend:58,offensiveReboundTend:72},"Tim Duncan":{shotTendency:58,closeShotTend:88,midRangeTend:78,threePointTend:12,drivingShotTend:22,pullUpTend:18,catchShootTend:48,stepBackTend:12,postUpTend:88,contestedShotTend:68,driveTendency:28,driveToBasketTend:32,driveAndKickTend:42,isoTendency:22,pickAndRollTend:38,spotUpTend:42,passToOpenTend:55,touchPassTend:42,flashyPassTend:15,alleyOopTend:28,dimerTendency2:48,defPressureTend:82,stealTendency:55,blockTendency:92,helpDefTend:88,doubleTeamTend:42,chargeTend:28,fastBreakTend:32,halfCourtTend:78,clutchTendency:88,tempoPusher:32,foulDrawingTend:52,offensiveReboundTend:65},"Kareem Abdul-Jabbar":{shotTendency:65,closeShotTend:95,midRangeTend:78,threePointTend:12,drivingShotTend:22,pullUpTend:18,catchShootTend:42,stepBackTend:12,postUpTend:92,contestedShotTend:72,driveTendency:28,driveToBasketTend:35,driveAndKickTend:32,isoTendency:28,pickAndRollTend:32,spotUpTend:38,passToOpenTend:42,touchPassTend:32,flashyPassTend:18,alleyOopTend:35,dimerTendency2:32,defPressureTend:75,stealTendency:42,blockTendency:82,helpDefTend:72,doubleTeamTend:38,chargeTend:22,fastBreakTend:35,halfCourtTend:72,clutchTendency:88,tempoPusher:32,foulDrawingTend:52,offensiveReboundTend:62},"Dwyane Wade":{shotTendency:82,closeShotTend:85,midRangeTend:78,threePointTend:42,drivingShotTend:88,pullUpTend:72,catchShootTend:68,stepBackTend:62,postUpTend:42,contestedShotTend:78,driveTendency:92,driveToBasketTend:95,driveAndKickTend:55,isoTendency:82,pickAndRollTend:68,spotUpTend:55,passToOpenTend:68,touchPassTend:58,flashyPassTend:52,alleyOopTend:55,dimerTendency2:65,defPressureTend:78,stealTendency:82,blockTendency:58,helpDefTend:68,doubleTeamTend:22,chargeTend:18,fastBreakTend:92,halfCourtTend:58,clutchTendency:95,tempoPusher:82,foulDrawingTend:78,offensiveReboundTend:42},"Dirk Nowitzki":{shotTendency:82,closeShotTend:78,midRangeTend:96,threePointTend:78,drivingShotTend:38,pullUpTend:72,catchShootTend:92,stepBackTend:72,postUpTend:85,contestedShotTend:88,driveTendency:28,driveToBasketTend:32,driveAndKickTend:35,isoTendency:42,pickAndRollTend:38,spotUpTend:78,passToOpenTend:52,touchPassTend:42,flashyPassTend:28,alleyOopTend:22,dimerTendency2:42,defPressureTend:38,stealTendency:42,blockTendency:42,helpDefTend:38,doubleTeamTend:18,chargeTend:12,fastBreakTend:32,halfCourtTend:72,clutchTendency:95,tempoPusher:42,foulDrawingTend:58,offensiveReboundTend:32},"Scottie Pippen":{shotTendency:62,closeShotTend:68,midRangeTend:65,threePointTend:48,drivingShotTend:68,pullUpTend:52,catchShootTend:58,stepBackTend:38,postUpTend:42,contestedShotTend:62,driveTendency:72,driveToBasketTend:78,driveAndKickTend:65,isoTendency:52,pickAndRollTend:55,spotUpTend:52,passToOpenTend:72,touchPassTend:62,flashyPassTend:38,alleyOopTend:42,dimerTendency2:68,defPressureTend:92,stealTendency:88,blockTendency:62,helpDefTend:82,doubleTeamTend:32,chargeTend:22,fastBreakTend:82,halfCourtTend:62,clutchTendency:78,tempoPusher:72,foulDrawingTend:58,offensiveReboundTend:42}};
@@ -244,21 +246,12 @@ function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function clp(v,l,h){return Math.max(l,Math.min(h,v))}
 function posEmoji(p){return{PG:'🏃',SG:'🎯',SF:'🛡️',PF:'💪',C:'🏔️'}[p]||''}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
-var GS = {
-  chosenPos:'', playerPos:'', playerName:'', curAge:19, curTeam:null, selectedTeam:null,
-  baseAttrs:null, curAttrs:null, curOVR:0, playerTend:null,
-  spinRound:0, spinPhase:'player', lockedPlayer:null, drawnCats:[], drawnCatKeys:new Set(),
-  tendSpinRound:0, tendSpinPhase:'player', tendLockedPlayer:null, drawnTends:[], drawnTendKeys:new Set(),
-  curSeason:0, seasonGames:[], seasonW:0, seasonL:0, othRecords:{},
-  inPO:false, poRound:0, poType:'', poOpp:null, poSeries:[], poW:0, poOppW:0, poResults:[], poDone:false,
-  career:[], retired:false, trainingDone:false, contractYears:0, contractOffers:[],
-  injLeft:0, nextOpp:null, nextHome:false, rerolls:3, playerRole:'',
-  playInStage:1, playInSeed:0, playInOppSeed:0, playInSorted:null, poMySeed:0, poConfTop8:null
-};
-// GS initialized above
+function freshGS(){return{chosenPos:'',spinRound:0,spinPhase:'player',lockedPlayer:null,drawnCats:[],drawnCatKeys:new Set(),tendSpinRound:0,tendSpinPhase:'player',tendLockedPlayer:null,drawnTends:[],drawnTendKeys:new Set(),playerTend:null,playerName:'',playerPos:'',baseAttrs:null,curAttrs:null,curOVR:0,curAge:19,curTeam:null,contractYears:3,curSeason:0,seasonGames:[],seasonW:0,seasonL:0,othRecords:{},inPO:false,poRound:0,poType:'',poOpp:null,poSeries:[],poW:0,poOppW:0,poResults:[],poDone:false,lastStats:null,career:[],retired:false,trainingDone:false,contractOffers:[],injLeft:0,nextOpp:null,nextHome:false,playInStage:1,playInSeed:0,playInOppSeed:0,playInSorted:null,poMySeed:0,poConfTop8:null,rerolls:3};}
+let GS=freshGS();
 
-function pickPosition(pos,el){document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');GS.chosenPos=pos;GS.playerPos=pos;document.getElementById('pos-confirm').style.display='';document.getElementById('pos-confirm').innerHTML=`<div style=\"color:var(--gld);font-weight:700;margin:8px 0;\">已选择：${posEmoji(pos)} ${pos}</div><button class=\"btn btn-gold btn-sm\" onclick=\"startSpinning()\">确认位置，开始抽属性</button>`;}
-function restartGame(){GS=JSON.parse(JSON.stringify({chosenPos:'',playerPos:'',playerName:'',curAge:19,curTeam:null,selectedTeam:null,baseAttrs:null,curAttrs:null,curOVR:0,playerTend:null,spinRound:0,spinPhase:'player',lockedPlayer:null,drawnCats:[],drawnCatKeys:new Set(),tendSpinRound:0,tendSpinPhase:'player',tendLockedPlayer:null,drawnTends:[],drawnTendKeys:new Set(),curSeason:0,seasonGames:[],seasonW:0,seasonL:0,othRecords:{},inPO:false,poRound:0,poType:'',poOpp:null,poSeries:[],poW:0,poOppW:0,poResults:[],poDone:false,career:[],retired:false,trainingDone:false,contractYears:0,contractOffers:[],injLeft:0,nextOpp:null,nextHome:false,rerolls:3,playerRole:'',playInStage:1,playInSeed:0,playInOppSeed:0,playInSorted:null,poMySeed:0,poConfTop8:null}));document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));document.getElementById('pos-confirm').style.display='none';showScreen('screen-start');}
+function pickPosition(pos,el){document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');GS.chosenPos=pos;GS.playerPos=pos;document.getElementById('pos-confirm').style.display='';document.getElementById('pos-confirm').innerHTML='<div style="color:var(--gld);font-weight:700;margin:8px 0;">已选择：'+posEmoji(pos)+' '+pos+'</div><button class="btn btn-gold btn-sm" onclick="startSpinning()">确认位置，开始抽属性</button> <button class="btn btn-danger btn-sm" onclick="devQuickCreate()" style="font-size:10px;opacity:.6;">DEV: skip</button>';}
+function devQuickCreate(){if(!GS.chosenPos){alert('please select position first');return;}var pos=GS.chosenPos;GS.playerPos=pos;GS.drawnCats=[];GS.drawnCatKeys=new Set();GS.drawnTends=[];GS.drawnTendKeys=new Set();GS.lockedPlayer=null;GS.tendLockedPlayer=null;var star=WHEEL_P[Math.floor(Math.random()*WHEEL_P.length)];var cats=Object.keys(ATTR_CATS);shuffleArray(cats);var toPick=Math.min(7,cats.length);for(var i=0;i<toPick;i++){var ck=cats[i];GS.drawnCatKeys.add(ck);var ks=ATTR_CATS[ck].keys,vals={};ks.forEach(function(k){vals[k]=star[k];});GS.drawnCats.push({catKey:ck,label:ATTR_CATS[ck].label,color:ATTR_CATS[ck].color,attrs:vals,pName:star.name,pPos:star.pos,pEra:star.era,avg:Math.round(ks.reduce(function(s,k){return s+(star[k]||50);},0)/ks.length)});}GS.spinRound=8;GS.spinPhase='done';var tendCats=Object.keys(TEND_CATS);shuffleArray(tendCats);var tdPick=Math.min(5,tendCats.length);for(var j=0;j<tdPick;j++){var tck=tendCats[j];GS.drawnTendKeys.add(tck);var tks=TEND_CATS[tck].keys,tvals={};tks.forEach(function(tk){tvals[tk]=star.tendencies[tk];});GS.drawnTends.push({catKey:tck,label:TEND_CATS[tck].label,color:TEND_CATS[tck].color,attrs:tvals,pName:star.name,avg:Math.round(tks.reduce(function(s,tk){return s+(star.tendencies[tk]||50);},0)/tks.length)});}GS.tendSpinRound=6;GS.tendSpinPhase='done';GS.rerolls=3;finishSpinning();}function shuffleArray(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}}
+function restartGame(){GS=freshGS();document.querySelectorAll('.pos-card').forEach(c=>c.classList.remove('selected'));document.getElementById('pos-confirm').style.display='none';showScreen('screen-start');}
 
 function rerollSpin(){
 if(GS.rerolls<=0)return;
@@ -312,7 +305,7 @@ if(GS.spinRound<=TOTAL_SPINS){
 }
 }
 
-function startSpinning(){if(!GS.chosenPos)return;GS.spinRound=1;GS.spinPhase='player';GS.lockedPlayer=null;GS.drawnCats=[];GS.drawnCatKeys=new Set();GS.tendSpinRound=0;GS.tendSpinPhase='player';GS.tendLockedPlayer=null;GS.drawnTends=[];GS.drawnTendKeys=new Set();GS.playerTend=null;GS.rerolls=3;document.getElementById('spin-result').innerHTML='';document.getElementById('drawn-grid').innerHTML='';document.getElementById('locked-player-info').innerHTML='';document.getElementById('btn-spin').style.display='';document.getElementById('btn-finish').style.display='none';document.getElementById('btn-spin').disabled=false;updateSpinUI();showScreen('screen-spin');}
+function startSpinning(){if(!GS.chosenPos)return;GS=freshGS();GS.chosenPos=GS.chosenPos;GS.playerPos=GS.chosenPos;GS.spinRound=1;GS.spinPhase='player';document.getElementById('spin-result').innerHTML='';document.getElementById('drawn-grid').innerHTML='';document.getElementById('locked-player-info').innerHTML='';document.getElementById('btn-spin').style.display='';document.getElementById('btn-finish').style.display='none';document.getElementById('btn-spin').disabled=false;updateSpinUI();showScreen('screen-spin');}
 
 function updateSpinUI(){
 let rd='';for(let i=1;i<=TOTAL_SPINS;i++){let c='';if(i<GS.spinRound||(i===GS.spinRound&&GS.spinPhase==='done'))c='done';else if(i===GS.spinRound)c='current';rd+=`<div class="round-dot ${c}">${i}</div>`;if(i<TOTAL_SPINS)rd+='<div class="round-arrow">›</div>';}
@@ -417,37 +410,10 @@ if(GS.spinRound>TOTAL_SPINS){GS.spinPhase='done';btn.style.display='none';startT
 }},1700);
 }
 
-
-function goToTeamSelect(){renderTeamGrid();showScreen('screen-team');}
-
-function renderTeamGrid(){
-  var ovr=GS.curOVR,teams=NBA_TEAMS.concat().sort(function(a,b){return b.ovr-a.ovr;}),h='';
-  teams.forEach(function(t){
-    var canSign=t.ovr<=ovr+18,style=canSign?'':'opacity:0.4;pointer-events:none;';
-    var offers=['弱队核心','重建基石','替补轮换','首发机会','战术拼图'],offer=pick(canSign?offers:['(暂无报价)']);
-    h+='<div class="train-card" id="team-card-'+t.abbr+'" onclick="selectTeam(''+t.abbr+'')" style="'+style+'"><div style="text-align:center;"><img src="'+teamLogo(t)+'" style="width:44px;height:44px;object-fit:contain;border-radius:50%;" onerror="this.style.display='none';"><span style="display:none;font-size:32px;">'+t.emoji+'</span><div style="font-weight:700;font-size:12px;color:var(--gld);margin-top:2px;">'+t.abbr+'</div><div style="font-size:10px;color:var(--mut);">'+t.name+'</div><div style="font-size:10px;color:var(--mut);">OVR '+t.ovr+' | '+(t.conf==='west'?'西部':'东部')+'</div><div style="font-size:10px;color:var(--cyn);margin-top:2px;">📍 '+(canSign?offer:'(球队实力过强，暂不考虑)')+'</div></div></div>';
-  });
-  document.getElementById('team-grid').innerHTML=h;
-  document.getElementById('btn-team-confirm').disabled=true;
-}
-
-function selectTeam(abbr){
-  document.querySelectorAll('#team-grid .train-card').forEach(function(c){c.classList.remove('selected');});
-  document.getElementById('team-card-'+abbr).classList.add('selected');
-  GS.selectedTeam=NBA_TEAMS.find(function(t){return t.abbr===abbr;});
-  document.getElementById('btn-team-confirm').disabled=false;
-}
-
-function confirmTeamSelection(){
-  if(!GS.selectedTeam)return;
-  GS.curTeam=GS.selectedTeam;
-  startCareer();
-}
-
 function finishSpinning(){if(GS.drawnCats.length===0){showScreen('screen-start');return;}
 const fa={};ALL_ATTRS.forEach(k=>{fa[k]=rng(40,55);});
-GS.drawnCats.forEach(function(dc){Object.entries(dc.attrs).forEach(function(e){var k=e[0],v=e[1];if(k==='potential'){fa[k]=Math.min(99,Math.max(25,v+rng(-3,3)));}else{fa[k]=Math.min(99,Math.round(v*.95));}});});
-GS.baseAttrs=Object.assign({},fa);GS.curAttrs=Object.assign({},fa);GS.curOVR=calcOVR(fa,GS.playerPos);
+GS.drawnCats.forEach(dc=>{Object.entries(dc.attrs).forEach(([k,v])=>{if(k==='potential'){fa[k]=Math.min(99,Math.max(25,v+rng(0,3)));}else{fa[k]=Math.min(99,Math.round(v*.95));}});});
+GS.baseAttrs={...fa};GS.curAttrs={...fa};GS.curOVR=calcOVR(fa,GS.playerPos);
 const ft={};ALL_TEND_KEYS.forEach(k=>{ft[k]=rng(35,65);});
 GS.drawnTends.forEach(dt=>{Object.entries(dt.attrs).forEach(([k,v])=>{ft[k]=Math.min(99,Math.round(v*.95));});});
 GS.playerTend=ft;
@@ -456,6 +422,51 @@ const ln=['Johnson','Williams','Thompson','Davis','Wilson','Brown','Lee','Jackso
 GS.playerName=pick(fn)+' '+pick(ln);GS.curAge=19+rng(0,2);
 GS.curTeam=pick(NBA_TEAMS.filter(t=>t.ovr<85));GS.contractYears=2+rng(0,2);GS.curSeason=0;
 renderPlayerSummary();showScreen('screen-summary');
+}
+
+function goToTeamSelect(){
+	if(!GS.baseAttrs){showScreen('screen-start');return;}
+	renderTeamSelect();showScreen('screen-team');
+}
+function getRoleOnTeam(team){
+	const ovr=GS.curOVR||calcOVR(GS.baseAttrs,GS.playerPos);
+	if(ovr>=92&&team.ovr>=90)return{role:'核心',desc:'超级巨星加盟，立即成为球队领袖',color:'var(--gld)',avail:true};
+	if(ovr>=85&&team.ovr>=88)return{role:'核心',desc:'全明星级别，球队核心球员',color:'var(--gld)',avail:true};
+	if(ovr>=80)return{role:'首发',desc:'实力得到认可，稳坐首发位置',color:'var(--grn)',avail:true};
+	if(ovr>=72){
+		if(team.ovr>=90)return{role:'轮换',desc:'强队轮换阵容中的一员',color:'var(--cyn)',avail:true};
+		return{role:'首发',desc:'在年轻球队中成为首发',color:'var(--grn)',avail:true};
+	}
+	if(team.ovr>=92)return{role:'替补',desc:'需要在强队中争取上场时间',color:'var(--org)',avail:true};
+	if(team.ovr>=85)return{role:'轮换',desc:'轮换阵容中的潜力球员',color:'var(--cyn)',avail:true};
+	return{role:'轮换',desc:'新秀赛季的轮换球员',color:'var(--cyn)',avail:true};
+}
+function renderTeamSelect(){
+	const pc=document.getElementById('team-player-card');
+	const oi=document.getElementById('team-role-info');
+	if(!GS.baseAttrs)return;
+	const ovr=GS.curOVR||calcOVR(GS.baseAttrs,GS.playerPos);
+	pc.innerHTML='<div style="font-size:18px;font-weight:900;">'+GS.playerName+'</div><div class="pos-badge">'+GS.playerPos+'</div><div class="overall-num">'+ovr+'</div>';
+	let tb='';
+	NBA_TEAMS.forEach(function(t){
+		const rl=getRoleOnTeam(t);
+		tb+='<tr><td><button class="btn btn-sm btn-outline" onclick="selectTeam(\''+t.name+'\')">选择</button></td><td style="text-align:left;"><img src="'+teamLogo(t)+'" style="width:22px;height:22px;vertical-align:middle;border-radius:50%;margin-right:4px;" onerror="this.style.display=\'none\';">'+t.name+'</td><td style="font-weight:700;">'+t.ovr+'</td><td>'+(t.conf==='west'?'西部':'东部')+'</td><td style="color:'+rl.color+';font-weight:700;">'+rl.role+'</td><td style="font-size:10px;color:var(--mut);">'+rl.desc+'</td></tr>';
+	});
+	document.getElementById('team-select-tbody').innerHTML=tb;
+	document.getElementById('btn-confirm-team').disabled=true;
+}
+function selectTeam(tname){
+	const t=NBA_TEAMS.find(function(x){return x.name===tname;});
+	if(!t)return;
+	GS.curTeam=t;GS.contractYears=2+rng(0,2);
+	const rl=getRoleOnTeam(t);
+	const oi=document.getElementById('team-role-info');
+	oi.innerHTML='已选择：<b style="color:var(--gld);">'+t.emoji+' '+t.name+'</b> — <span style="color:'+rl.color+';font-weight:700;">'+rl.role+'</span> — '+rl.desc;
+	document.getElementById('btn-confirm-team').disabled=false;
+}
+function confirmTeamSelection(){
+	if(!GS.curTeam)return;
+	startCareer();
 }
 
 function renderPlayerSummary(){
@@ -488,68 +499,88 @@ function genSched(g){const sameConf=NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name
 function streakBonus(){if(GS.seasonGames.length<3)return 0;const l=GS.seasonGames.slice(-3),w=l.filter(g=>g.win).length;if(w>=3)return.04;if(w===0)return-.04;return 0;}
 function hotColdFactor(){if(GS.seasonGames.length<3)return 1;const l=GS.seasonGames.slice(-3).filter(g=>!g.injured),ap=l.length?l.reduce((s,g)=>s+g.pts,0)/l.length:15;if(ap>32)return 1.25;if(ap>22)return 1.08;if(ap<10)return.7;if(ap<15)return.88;return 1;}
 
-function genBox(a,ovr,opp,win){function genBox(a,ovr,opp,win){
-  refreshRole();var roleM=getRoleMultiplier(),tend=GS.playerTend||{},pf=(GS.curTeam.pace+opp.pace)/2/85;
-  var variance=0.7+Math.random()*0.6,hf=hotColdFactor();
-  // FGA
-  var scorSkill=(a.threePoint*0.08+a.midRange*0.10+a.closeShot*0.08+a.drivingLayup*0.07+a.shotIQ*0.06+a.offConsistency*0.04)/99;
-  var shA=((tend.shotTendency||50)/50),midA=((tend.midRangeTend||50)/50),t3A=((tend.threePointTend||50)/50),drvA=((tend.driveTendency||50)/50);
-  var shootWilling=shA*0.35+midA*0.15+t3A*0.20+drvA*0.15,usage=clp(0.35+0.4*shA*(ovr/80),0.25,1.6);
-  var fgaBase=scorSkill*0.42+shootWilling*0.28,fgaR=clp(fgaBase,0.06,0.62)+Math.random()*0.16-0.04;
-  var rawFga=Math.round(clp(fgaR*38*pf*roleM.fga*variance,2,28)),fgaCap=clp(Math.round(scorSkill*30+shootWilling*8),3,28),fga=Math.min(rawFga,fgaCap);
-  // FG%
-  var shotQuality=(a.midRange*0.08+a.threePoint*0.06+a.closeShot*0.06+a.shotIQ*0.06+a.offConsistency*0.03)/99;
-  var contestedFactor=Math.max(0.6,((tend.contestedShotTend||50)/70)),fgBase=shotQuality*0.55+(1-contestedFactor)*0.08+0.15;
-  var fgPct=clp(fgBase,0.20,0.68)+Math.random()*0.16-0.08,fgMax=Math.min(0.68,shotQuality*0.85+0.22),fgm=Math.round(clp(Math.min(fga*fgPct,fga*fgMax),1,fga-1));
-  // 3P
-  var threeSkill=(a.threePoint*0.14+a.catchShoot*0.04+a.offDribbleShot*0.03+a.shotIQ*0.03)/99;
-  var threeWilling=((tend.threePointTend||35)/100),threePAR=clp(threeWilling*0.55+threeSkill*0.20,0.02,0.72)+Math.random()*0.16-0.06;
-  var threePA=Math.round(Math.min(fga,fga*threePAR)),threePct=clp(a.threePoint/190+0.05,0.05,0.52)+Math.random()*0.14-0.07,threePM=Math.round(Math.min(threePA,threePA*threePct)),twoPM=fgm-threePM;
-  // FT
-  var foulSkill=(a.drawFoul*0.08+a.drivingLayup*0.05+a.strength*0.03)/99,foulTend=((tend.foulDrawingTend||50)/50);
-  var ftR=clp(foulSkill*0.40+foulTend*0.15,0.01,0.52)+Math.random()*0.08,fta=Math.round(fgm*clp(ftR,0.02,0.60)),ftm=Math.round(fta*clp(a.freeThrow/100+Math.random()*0.12-0.06,0.40,1.0));
-  // PTS with burst
-  var rawPts=twoPM*2+threePM*3+ftm,ptsCap=clp(Math.round(scorSkill*38+shootWilling*10),5,50),pts;
-  var burstChance=clp(scorSkill*0.12+shootWilling*0.05,0.03,0.18);
-  if(Math.random()<burstChance){pts=Math.min(60,Math.round(rawPts*(1+Math.random()*0.30+scorSkill*0.18)));}
-  else{pts=Math.min(rawPts,ptsCap);}
-  // MIN
-  var baseMin=18+Math.round(ovr/7),min=Math.round(clp(rng(baseMin-6,baseMin+8)*roleM.min,6,40));
-  // REB
-  var rebSkill=(a.defRebound*0.10+a.offRebound*0.06+a.strength*0.025+a.vertical*0.015+a.hustle*0.02)/99;
-  var rebTend=((tend.offensiveReboundTend||50)/50),rebBase=rebSkill*0.60+rebTend*0.15,rebR=clp(rebBase,0.020,0.52)+Math.random()*0.14;
-  var rawReb=Math.round(clp(rebR*40*pf*hf*variance,0,22)),rebCap=clp(Math.round(rebSkill*24+rebTend*6),0,22),reb=Math.min(rawReb,rebCap);
-  // AST
-  var passSkill=(a.passAccuracy*0.15+a.passVision*0.10+a.passIQ*0.08+a.ballHandle*0.05+a.speedWithBall*0.03)/99;
-  var passTend=((tend.dimerTendency2||50)/50),driveKick=((tend.driveAndKickTend||50)/50);
-  var astBase=passSkill*0.60+passTend*0.18+driveKick*0.08,astR=clp(astBase,0.010,0.48)+Math.random()*0.10;
-  var rawAst=Math.round(clp(astR*30*pf*roleM.ast*hf*variance,0,14)),astCap=clp(Math.round(passSkill*14+passTend*4),0,14),ast=Math.min(rawAst,astCap);
-  // STL
-  var stlSkill=(a.steal*0.16+a.perimeterDef*0.08+a.lateralQuickness*0.05+a.agility*0.03+a.speed*0.02)/99;
-  var stlTend=((tend.stealTendency||50)/50),defPressure=((tend.defPressureTend||50)/50);
-  var stlBase=stlSkill*0.45+stlTend*0.18+defPressure*0.08,stlR=clp(stlBase,0.010,0.52)+Math.random()*0.12;
-  var rawStl=Math.random()<clp(stlR,0.02,0.50)?Math.round(clp(stlR*5.5,0,5)):0,stlCap=clp(Math.round(stlSkill*7+stlTend*2),0,5),stl=Math.min(rawStl,stlCap);
-  // BLK
-  var blkSkill=(a.block*0.18+a.interiorDef*0.08+a.vertical*0.05+a.strength*0.03+a.helpDefense*0.04)/99;
-  var blkTend=((tend.blockTendency||50)/50),helpDef=((tend.helpDefTend||50)/50);
-  var blkBase=blkSkill*0.45+blkTend*0.16+helpDef*0.06,blkR=clp(blkBase,0.005,0.48)+Math.random()*0.10;
-  var rawBlk=Math.random()<clp(blkR,0.01,0.42)?Math.round(clp(blkR*5.5,0,5)):0,blkCap=clp(Math.round(blkSkill*7+blkTend*2),0,5),blk=Math.min(rawBlk,blkCap);
-  // TOV
-  var tovSkillVal=(100-a.ballHandle)*0.06+(100-a.passAccuracy)*0.03+(50-(a.offConsistency||50))*0.02;
-  var tovMin=Math.round(clp(2+tovSkillVal*0.08,0,2)),tovMax=Math.round(clp(tovSkillVal*0.35,1,8)),tov=rng(tovMin,tovMax);
-  return{pts:pts,reb:reb,ast:ast,stl:stl,blk:blk,tov:tov,min:min,fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,ft:fta>0?Math.round(ftm/fta*100):75,fga:fga,fgm:fgm,threePA:threePA,threePM:threePM,fta:fta,ftm:ftm};
+function genBox(a,ovr,opp,win){
+	refreshRole();var roleM=getRoleMultiplier();var tend=GS.playerTend||{};
+	var pf=(GS.curTeam.pace+opp.pace)/2/85;
+	function td(k,d){d=d||50;var v=tend[k];return(v!==undefined&&v===v)?v:d;}
+
+	// ====== 1. SCORING ======
+	var sAttr=(a.closeShot||50)*.18+(a.drivingLayup||50)*.16+(a.drivingDunk||50)*.10+(a.standingDunk||50)*.06+(a.postControl||50)*.06+(a.midRange||50)*.18+(a.threePoint||50)*.14+(a.offDribbleShot||50)*.12;
+	var sTend=td('shotTendency')*.35+td('threePointTend')*.20+td('driveTendency')*.18+td('midRangeTend')*.15+td('pullUpTend')*.08+td('postUpTend')*.04;
+	var sTM=clp(sTend/60,.25,1.55);
+	var fga=Math.round(clp((6+(sAttr/99)*14*sTM*roleM.fga*pf)*(.55+Math.random()*.70),1,32));
+	var rawFG=clp(.30+(sAttr/99)*.40,.24,.72);
+	var shotQ=clp(.84+(td('catchShootTend')-50)*.002-(td('contestedShotTend')-50)*.001,.50,1.06);
+	var fgPct=clp(rawFG*shotQ,.16,.78);
+	var fgm=Math.round(clp(fga*fgPct*(.82+Math.random()*.32),1,Math.max(1,fga-1)));
+	var threeTendMod=clp(td('threePointTend')/100,.08,.80);
+	var threeRatio=clp(threeTendMod*.50*(a.threePoint/99),.02,.72);
+	var threePA=Math.round(clp(fga*threeRatio*(.50+Math.random()*.70),0,fga));
+	var tpRate=clp(.18+(a.threePoint/99)*.42,.14,.56);
+	var threePM=Math.round(clp(threePA*tpRate*(.76+Math.random()*.40),0,threePA));
+	var twoPM=fgm-threePM;
+	var ftTendMod=clp(td('foulDrawingTend')/100,.15,.75);
+	var fta=Math.round(clp(fga*ftTendMod*(a.drawFoul/99)*.22*(.60+Math.random()*.50),0,18));
+	var ftm=Math.round(fta*clp(a.freeThrow/105,.30,.96));
+	var ptsCap=ovr>=95?58:ovr>=90?52:ovr>=85?46:ovr>=80?40:ovr>=72?34:28;
+	var pts=clp((twoPM*2+threePM*3+ftm)*(.86+Math.random()*.22),2,ptsCap);
+	var isBreakout=Math.random()<.08;
+	if(isBreakout){pts=Math.round(Math.min(pts*1.40+rng(2,10),ptsCap+12));}
+	pts=Math.round(pts);
+
+	// ====== 2. REBOUNDS ======
+	var rebAttr=(a.defRebound||40)*.50+(a.offRebound||40)*.22+(a.strength||50)*.10+(a.vertical||50)*.10+(a.hustle||50)*.08;
+	var rebTendMod=clp(td('offensiveReboundTend')/100,.20,.70);
+	var reb=Math.round(clp((.8+ovr*.015+rebAttr*.15*(rebTendMod+.40)*roleM.fga*pf)*(.50+Math.random()*.90),0,22));
+
+	// ====== 3. ASSISTS ======
+	var passAttr=(a.passAccuracy||50)*.38+(a.passVision||50)*.28+(a.passIQ||50)*.22+(a.ballHandle||50)*.12;
+	var passTendRaw=td('dimerTendency2')*.42+td('passToOpenTend')*.35+td('touchPassTend')*.14+td('driveAndKickTend')*.09;
+	var passTendMod=clp(passTendRaw/55,.15,1.55);
+	var ast=Math.round(clp((.5+ovr*.012+passAttr*.12*passTendMod*roleM.ast*pf)*(.50+Math.random()*.90),0,clp(Math.round(passAttr/7.5),2,16)));
+
+	// ====== 4. STEALS ======
+	var stlTM=clp(td('stealTendency')/100,.10,.70);
+	var stlSkill=(a.steal||40)*.05*stlTM*roleM.fga*pf;
+	var stl=Math.random()<clp(stlSkill*(.65+Math.random()*.55),.02,.70)?Math.round(clp(stlSkill*2.0*(.40+Math.random()*1.10),0,5)):0;
+
+	// ====== 5. BLOCKS ======
+	var blkTM=clp(td('blockTendency')/100,.10,.70);
+	var blkSkill=(a.block||40)*.05*blkTM*roleM.fga*pf;
+	var blk=Math.random()<clp(blkSkill*(.60+Math.random()*.55),.04,.65)?Math.round(clp(blkSkill*2.0*(.35+Math.random()*1.15),0,5)):0;
+
+	// ====== 6. TURNOVERS ======
+	var ballSec=(a.ballHandle||50)*.60+(a.passAccuracy||50)*.40;
+	var riskRaw=td('flashyPassTend')*.28+td('isoTendency')*.22+td('driveToBasketTend')*.20+td('alleyOopTend')*.10;
+	var riskMod=clp(riskRaw/55,.30,1.50);
+	var tov=Math.round(clp(((100-ballSec)*.042*.55+riskMod*1.35*.45)*(.50+Math.random()*.90),.1,7));
+
+	// ====== 7. MINUTES ======
+	var min=Math.round(clp((14+ovr*.22)*roleM.min*(.70+Math.random()*.55),6,42));
+
+	return{pts:pts,reb:reb,ast:ast,stl:stl,blk:blk,tov:tov,min:min,
+		fg:fga>0?Math.round(fgm/fga*100):40,tp:threePA>0?Math.round(threePM/threePA*100):30,
+		ft:fta>0?Math.round(ftm/fta*100):75,fga:fga,fgm:fgm,threePA:threePA,threePM:threePM,fta:fta,ftm:ftm,isBreakout:isBreakout};
 }
 
 
-function simOneGame(){
-if(GS.inPO||GS.poDone)return;var gn=GS.seasonGames.length+1;
-if(gn>82){endRegSeason();return;}
-if(GS.injLeft>0){GS.injLeft--;var _opp=GS.nextOpp||pick(NBA_TEAMS.filter(function(t){return t.name!==GS.curTeam.name;})),_home=GS.nextHome,_wp=clp(.5+(GS.curTeam.ovr-_opp.ovr)*.008-.08,.06,.88),_win=Math.random()<_wp;var _res={gameNum:gn,opponent:_opp,home:_home,win:_win,pts:0,reb:0,ast:0,stl:0,blk:0,tov:0,min:0,fg:0,tp:0,ft:0,fga:0,fgm:0,threePA:0,threePM:0,fta:0,ftm:0,injured:true};GS.seasonGames.push(_res);if(_res.win)GS.seasonW++;else GS.seasonL++;var _oR=GS.othRecords[_opp.name]||{wins:0,losses:0};if(!_res.win)_oR.wins++;else _oR.losses++;GS.othRecords[_opp.name]=_oR;simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;renderGameResult(_res,false);renderEvents([{text:'因伤缺阵 (剩余'+GS.injLeft+'场)',type:'injury'}]);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();if(GS.seasonGames.length>=82)endRegSeason();return;}
-var s=GS.nextOpp&&GS.nextHome!==undefined?{opp:GS.nextOpp,home:GS.nextHome}:genSched(gn),opp=s.opp,home=s.home,res=simGame(opp,home);GS.seasonGames.push(res);if(res.win)GS.seasonW++;else GS.seasonL++;var oRec=GS.othRecords[opp.name]||{wins:0,losses:0};if(!res.win)oRec.wins++;else oRec.losses++;GS.othRecords[opp.name]=oRec;simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;var evs=rollEvents(gn,res);renderGameResult(res,false);renderEvents(evs);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();document.getElementById('game-result-area').scrollIntoView({behavior:'smooth',block:'center'});if(GS.seasonGames.length>=82)endRegSeason();}
 
-function simGame(opp,home){var a=GS.curAttrs,ovr=GS.curOVR,hb=home?0.035:-0.035,wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008+(ovr-75)*.004+hb+streakBonus(),.08,.92),win=Math.random()<wp,box=genBox(a,ovr,opp,win);return{gameNum:GS.seasonGames.length+1,opponent:opp,home:home,win:win,pts:box.pts,reb:box.reb,ast:box.ast,stl:box.stl,blk:box.blk,tov:box.tov,min:box.min,fg:box.fg,tp:box.tp,ft:box.ft,fga:box.fga,fgm:box.fgm,threePA:box.threePA,threePM:box.threePM,fta:box.fta,ftm:box.ftm};}
+function simGame(opp,home){const a=GS.curAttrs,ovr=GS.curOVR,hb=home?.035:-.035;const wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008+(ovr-75)*.004+hb+streakBonus(),.08,.92);const win=Math.random()<wp,box=genBox(a,ovr,opp,win);return{gameNum:GS.seasonGames.length+1,opponent:opp,home,win,...box};}
+
+function simOneGame(){
+if(GS.inPO||GS.poDone)return;const gn=GS.seasonGames.length+1;if(gn>82){endRegSeason();return;}
+if(GS.injLeft>0){GS.injLeft--;const opp=GS.nextOpp||pick(NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name)),home=GS.nextHome;const wp=clp(.5+(GS.curTeam.ovr-opp.ovr)*.008-.08,.06,.88),win=Math.random()<wp;const box={pts:0,reb:0,ast:0,stl:0,blk:0,tov:0,min:0,fg:0,tp:0,ft:0,fga:0,fgm:0,threePA:0,threePM:0,fta:0,ftm:0,injured:!0},res={gameNum:gn,opponent:opp,home,win,...box};GS.seasonGames.push(res);if(res.win)GS.seasonW++;else GS.seasonL++;const oRec=GS.othRecords[opp.name]||{wins:0,losses:0};if(!res.win)oRec.wins++;else oRec.losses++;GS.othRecords[opp.name]=oRec;simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;renderGameResult(res,!1);renderEvents([{text:`🤕 因伤缺阵 (剩余${GS.injLeft}场)`,type:'injury'}]);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();document.getElementById('game-result-area').scrollIntoView({behavior:'smooth',block:'center'});if(GS.seasonGames.length>=82)endRegSeason();return;}
+const s=GS.nextOpp&&GS.nextHome!==undefined?{opp:GS.nextOpp,home:GS.nextHome}:genSched(gn),opp=s.opp,home=s.home;
+const res=simGame(opp,home);GS.seasonGames.push(res);if(res.win)GS.seasonW++;else GS.seasonL++;
+const oRec=GS.othRecords[opp.name]||{wins:0,losses:0};if(!res.win)oRec.wins++;else oRec.losses++;GS.othRecords[opp.name]=oRec;
+simOtherGames();GS.nextOpp=genSched(gn+1).opp;GS.nextHome=genSched(gn+1).home;
+const evs=rollEvents(gn,res);renderGameResult(res,!1);renderEvents(evs);updateSeasonUI();updateQuickStats();updateMatchup();updateGameLogTable();
+document.getElementById('game-result-area').scrollIntoView({behavior:'smooth',block:'center'});if(GS.seasonGames.length>=82)endRegSeason();
+}
 
 function simOtherGames(){const n=rng(3,5);for(let i=0;i<n;i++){const pool=NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name);const t1=pick(pool),t2=pick(pool.filter(t=>t.name!==t1.name));const r1=GS.othRecords[t1.name]||{wins:0,losses:0},r2=GS.othRecords[t2.name]||{wins:0,losses:0},wp=clp(.5+(t1.ovr-t2.ovr)*.008,.1,.9);if(Math.random()<wp){r1.wins++;r2.losses++;}else{r2.wins++;r1.losses++;}GS.othRecords[t1.name]=r1;GS.othRecords[t2.name]=r2;}}
+
+function updateGameLogTable(){const tb=document.getElementById('game-log-tbody');let h='';GS.seasonGames.forEach((g,i)=>{const cls=g.win?'glog-win':'glog-loss',ij=g.injured;h+=`<tr><td>${i+1}</td><td style="text-align:left;font-size:9px;"><img src="${teamLogo(g.opponent)}" style="width:12px;height:12px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${g.opponent.abbr}</td><td class="${cls}">${g.win?'W':'L'}</td><td>${ij?'-':g.pts}</td><td>${ij?'-':g.reb}</td><td>${ij?'-':g.ast}</td><td>${ij?'-':g.stl}</td><td>${ij?'-':g.blk}</td><td>${ij?'-':g.tov}</td><td>${ij?'-':g.min}</td><td>${ij?'-':g.fgm+'/'+g.fga}</td><td>${ij?'-':g.threePM+'/'+g.threePA}</td><td>${ij?'-':g.fg+'%'}</td><td>${ij?'-':g.tp+'%'}</td><td>${ij?'-':g.ft+'%'}</td></tr>`;});tb.innerHTML=h;tb.parentElement.scrollTop=tb.parentElement.scrollHeight;}
 
 function rollEvents(gn,res){
 const evs=[];
@@ -564,9 +595,6 @@ if(gn===41)evs.push({text:'🌟 全明星周末即将到来！',type:'milestone'
 if(gn%rng(10,16)===0)evs.push(pick([{text:'📰 ESPN本周最佳球员候选人',type:'event'},{text:'🗣️ 教练称赞你的进步',type:'event'},{text:'💬 队友表示和你打球很舒服',type:'event'}]));
 return evs;
 }
-
-function updateGameLogTable(){const tb=document.getElementById('game-log-tbody');let h='';GS.seasonGames.forEach((g,i)=>{const cls=g.win?'glog-win':'glog-loss',ij=g.injured;h+=`<tr><td>${i+1}</td><td style="text-align:left;font-size:9px;"><img src="${teamLogo(g.opponent)}" style="width:12px;height:12px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${g.opponent.abbr}</td><td class="${cls}">${g.win?'W':'L'}</td><td>${ij?'-':g.pts}</td><td>${ij?'-':g.reb}</td><td>${ij?'-':g.ast}</td><td>${ij?'-':g.stl}</td><td>${ij?'-':g.blk}</td><td>${ij?'-':g.tov}</td><td>${ij?'-':g.min}</td><td>${ij?'-':g.fgm+'/'+g.fga}</td><td>${ij?'-':g.threePM+'/'+g.threePA}</td><td>${ij?'-':g.fg+'%'}</td><td>${ij?'-':g.tp+'%'}</td><td>${ij?'-':g.ft+'%'}</td></tr>`;});tb.innerHTML=h;tb.parentElement.scrollTop=tb.parentElement.scrollHeight;}
-
 function genInjury(age){const mi=[{text:'🤕 轻微脚踝扭伤（缺2场）',gms:2},{text:'🤕 手指挫伤（缺3场）',gms:3},{text:'🤕 背部痉挛（缺4场）',gms:4}];const ma=[{text:'🏥 脚踝二级扭伤（缺15场）',gms:15},{text:'🏥 腿筋拉伤（缺18场）',gms:18},{text:'🏥 膝盖扭伤（缺22场）',gms:22}];if(age>33&&Math.random()<.25)return pick(ma);if(Math.random()<.08)return pick(ma);return pick(mi);}
 
 function endRegSeason(){
@@ -577,7 +605,7 @@ remaining.sort(()=>Math.random()-.5);
 while(remaining.length>=2){const a=remaining.shift(),b=remaining.shift(),games=Math.min(a.rem,b.rem,rng(1,4));const aR=GS.othRecords[a.team.name]||{wins:0,losses:0},bR=GS.othRecords[b.team.name]||{wins:0,losses:0},wp=clp(.5+(a.team.ovr-b.team.ovr)*.008,.12,.88);for(let i=0;i<games;i++){if(Math.random()<wp){aR.wins++;bR.losses++;}else{bR.wins++;aR.losses++;}}GS.othRecords[a.team.name]=aR;GS.othRecords[b.team.name]=bR;if(a.rem-games>0)remaining.push({team:a.team,rem:a.rem-games});if(b.rem-games>0)remaining.push({team:b.team,rem:b.rem-games});}
 if(remaining.length===1){const t=remaining[0],rec=GS.othRecords[t.team.name]||{wins:0,losses:0},pool=NBA_TEAMS.filter(x=>x.name!==t.team.name&&x.name!==GS.curTeam.name),partner=pick(pool),pRec=GS.othRecords[partner.name]||{wins:0,losses:0},wp=clp(.5+(t.team.ovr-partner.ovr)*.008,.12,.88);for(let i=0;i<t.rem;i++){if(Math.random()<wp){rec.wins++;pRec.losses++;}else{pRec.wins++;rec.losses++;}}GS.othRecords[t.team.name]=rec;GS.othRecords[partner.name]=pRec;}
 const avg=compileAvg(),myConf=GS.curTeam.conf,confTeams=(myConf==='west'?WEST:EAST).filter(t=>t.name!==GS.curTeam.name),recs={};recs[GS.curTeam.name]={wins:GS.seasonW,losses:GS.seasonL};Object.entries(GS.othRecords).forEach(([n,r])=>{recs[n]=r;});
-const sorted=[GS.curTeam,...confTeams].sort((a,b)=>(((recs[b.name]||{}).wins)||0)-(((recs[a.name]||{}).wins)||0)),myIdx=sorted.findIndex(t=>t.name===GS.curTeam.name),seed=myIdx+1;
+const sorted=[GS.curTeam,...confTeams].sort((a,b)=>(recs[b.name]?.wins||0)-(recs[a.name]?.wins||0)),myIdx=sorted.findIndex(t=>t.name===GS.curTeam.name),seed=myIdx+1;
 if(seed<=6){startPlayoffs(seed);}else if(seed<=10&&GS.seasonW>=25){startPlayIn(seed,sorted);}else{showSeasonEnd(avg,{madePlayoffs:!1,isChamp:!1});setTimeout(()=>addLogEvent('😞 未能进入附加赛区','injury'),500);}
 }
 
@@ -664,11 +692,11 @@ pc.innerHTML=`<div class="series-box"><div class="series-title">🏀 ${label}</d
 }
 
 // ==================== PLAYOFFS ====================
-function startPlayoffs(seed){GS.inPO=!0;GS.poDone=!1;GS.poType='playoff';GS.poRound=1;GS.poSeries=[];GS.poResults=[];GS.poOpp=null;GS.poW=0;GS.poOppW=0;const myConf=GS.curTeam.conf;const confTeams=(myConf=='west'?WEST:EAST).filter(t=>t.name!==GS.curTeam.name);const recs={};recs[GS.curTeam.name]={wins:GS.seasonW,losses:GS.seasonL};Object.entries(GS.othRecords).forEach(([n,r])=>{recs[n]=r;});const sorted=[GS.curTeam,...confTeams].sort((a,b)=>(((recs[b.name]||{}).wins)||0)-(((recs[a.name]||{}).wins)||0));const myIdx=sorted.findIndex(t=>t.name===GS.curTeam.name);const realSeed=myIdx+1;GS.poMySeed=realSeed;const top8=sorted.slice(0,8).filter(t=>t.name!==GS.curTeam.name);while(top8.length<7)top8.push(pick(confTeams.filter(t=>!top8.find(x=>x.name===t.name))));GS.poConfTop8=top8;const oppSeed=9-realSeed;let opp=oppSeed<=top8.length?top8[oppSeed-1]:null;if(!opp||opp.name===GS.curTeam.name)opp=pick(confTeams.filter(t=>t.name!==GS.curTeam.name));GS.poOpp=opp;document.getElementById('po-card').style.display='';document.getElementById('se-card').style.display='none';document.getElementById('po-btns').style.display='';addLogEvent('\u{1F3C0} '+(myConf=='west'?'\u897F\u90E8':'\u4E1C\u90E8')+'\u9996\u8F6E (#'+realSeed+' vs #'+oppSeed+')\uFF1A'+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');updatePlayoffUI();document.getElementById('po-card').scrollIntoView({behavior:'smooth'});}
+function startPlayoffs(seed){GS.inPO=!0;GS.poDone=!1;GS.poType='playoff';GS.poRound=1;GS.poSeries=[];GS.poResults=[];GS.poOpp=null;GS.poW=0;GS.poOppW=0;const myConf=GS.curTeam.conf;const confTeams=(myConf=='west'?WEST:EAST).filter(t=>t.name!==GS.curTeam.name);const recs={};recs[GS.curTeam.name]={wins:GS.seasonW,losses:GS.seasonL};Object.entries(GS.othRecords).forEach(([n,r])=>{recs[n]=r;});const sorted=[GS.curTeam,...confTeams].sort((a,b)=>(recs[b.name]?.wins||0)-(recs[a.name]?.wins||0));const myIdx=sorted.findIndex(t=>t.name===GS.curTeam.name);const realSeed=myIdx+1;GS.poMySeed=realSeed;const top8=sorted.slice(0,8).filter(t=>t.name!==GS.curTeam.name);while(top8.length<7)top8.push(pick(confTeams.filter(t=>!top8.find(x=>x.name===t.name))));GS.poConfTop8=top8;const oppSeed=9-realSeed;let opp=oppSeed<=top8.length?top8[oppSeed-1]:null;if(!opp||opp.name===GS.curTeam.name)opp=pick(confTeams.filter(t=>t.name!==GS.curTeam.name));GS.poOpp=opp;document.getElementById('po-card').style.display='';document.getElementById('se-card').style.display='none';document.getElementById('po-btns').style.display='';addLogEvent('\u{1F3C0} '+(myConf=='west'?'\u897F\u90E8':'\u4E1C\u90E8')+'\u9996\u8F6E (#'+realSeed+' vs #'+oppSeed+')\uFF1A'+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');updatePlayoffUI();document.getElementById('po-card').scrollIntoView({behavior:'smooth'});}
 function advancePlayoffRound(){GS.poRound++;if(GS.poRound===4){const oppConfTeams=GS.curTeam.conf=='west'?EAST:WEST;GS.poOpp=pick(oppConfTeams);addLogEvent('\u{1F3C6} \u603B\u51B3\u8D5B\uFF01'+(GS.curTeam.conf=='west'?'\u897F\u90E8':'\u4E1C\u90E8')+'\u51A0\u519B vs '+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');}else{const myConf=GS.curTeam.conf;const confPool=(myConf=='west'?WEST:EAST).filter(t=>t.name!==GS.curTeam.name);let nextOpp=pick(confPool.length>0?confPool:NBA_TEAMS.filter(t=>t.name!==GS.curTeam.name));GS.poOpp=nextOpp;const rn=GS.poRound===2?'\u5206\u533A\u534A\u51B3\u8D5B':GS.poRound===3?'\u5206\u533A\u51B3\u8D5B':'\u7CFB\u5217\u8D5B';addLogEvent('\u{1F3C0} \u664B\u7EA7'+rn+'\uFF01\u5BF9\u624B\uFF1A'+GS.poOpp.emoji+' '+GS.poOpp.name,'milestone');}GS.poW=0;GS.poOppW=0;GS.poSeries=[];GS.poDone=!1;document.getElementById('po-btns').style.display='';updatePlayoffUI();document.getElementById('po-card').scrollIntoView({behavior:'smooth'});}
 function endPlayoffs(isChamp){GS.inPO=!1;GS.poDone=!0;document.getElementById('po-card').style.display='none';const avg=compileAvg(),poRes={madePlayoffs:!0,isChamp,rounds:GS.poResults};if(isChamp)addLogEvent('🏆🎉 NBA总冠军！！！','milestone');showSeasonEnd(avg,poRes);}
 
-function simPOSeries(){for(var i=0;i<7&&GS.inPO&&!GS.poDone&&GS.poW<4&&GS.poOppW<4;i++){simOnePO();}}
+async function simPOSeries(){while(GS.inPO&&!GS.poDone&&GS.poW<4&&GS.poOppW<4){simOnePO();await new Promise(r=>setTimeout(r,150));}}
 
 function updatePlayoffUI(){
 const pc=document.getElementById('po-content'),tiers=['','首轮','分区半决赛','分区决赛','总决赛'];let sg='';
@@ -681,7 +709,7 @@ function rollPOEvents(res){const evs=[];if(res.pts>=40)evs.push({text:`🏆 季�
 // ==================== SEASON END ====================
 function showSeasonEnd(avg,poRes){
 GS.lastStats=avg;document.getElementById('se-card').style.display='';document.getElementById('se-card').scrollIntoView({behavior:'smooth'});
-const aw=determineAwards(avg,poRes),sd={season:GS.curSeason,age:GS.curAge+GS.curSeason-1,team:GS.curTeam,ovr:GS.curOVR,attrs:Object.assign({},GS.curAttrs),gamesPlayed:GS.seasonGames.length,wins:GS.seasonW,losses:GS.seasonL,stats:avg,awards:aw,poRes};GS.career.push(sd);GS.contractYears--;
+const aw=determineAwards(avg,poRes),sd={season:GS.curSeason,age:GS.curAge+GS.curSeason-1,team:GS.curTeam,ovr:GS.curOVR,attrs:{...GS.curAttrs},gamesPlayed:GS.seasonGames.length,wins:GS.seasonW,losses:GS.seasonL,stats:avg,awards:aw,poRes};GS.career.push(sd);GS.contractYears--;
 const labels={MVP:'MVP',AS:'全明星',AN:'最佳阵容',AN2:'二阵',AN3:'三阵',DPOY:'DPOY',ROTY:'ROTY',CHAMP:'总冠军',FMVP:'FMVP',SC:'得分王',RBL:'篮板王',ASTL:'助攻王',STLL:'抢断王',BLKL:'盖帽王',MIP:'MIP',SMOY:'6MOY',ASMVP:'ASMVP',DEF1:'防守一阵',DEF2:'防守二阵',ROT:'新秀一阵',CFMVP:'分区MVP',WCF:'周最佳',MCF:'月最佳'};
 const cls={MVP:'a-mvp',AS:'a-as',AN:'a-an',AN2:'a-an',AN3:'a-an',DPOY:'a-dp',ROTY:'a-roy',CHAMP:'a-champ',FMVP:'a-fmvp',SC:'a-sc',RBL:'a-mip',ASTL:'a-asm',STLL:'a-def',BLKL:'a-def',MIP:'a-mip',SMOY:'a-smo',ASMVP:'a-asm',DEF1:'a-def',DEF2:'a-def',ROT:'a-rot',CFMVP:'a-cfm',WCF:'a-as',MCF:'a-an'};
 let ah='';aw.forEach(a=>{ah+=`<span class="award-card ${cls[a]||'a-an'}">${labels[a]||a}</span> `;});
@@ -692,12 +720,12 @@ if(checkRetire(age,GS.curOVR)){document.getElementById('btn-ns').style.display='
 
 function determineAwards(avg,poRes){const aw=[],ovr=GS.curOVR,tw=GS.seasonW,tl=GS.seasonL;
 const mvpScore=avg.pts*1.2+avg.reb*0.8+avg.ast*1.0+avg.stl*2.0+avg.blk*1.5+tw*0.3+ovr*0.4;
-var isMVP=ovr>=85&&tw>=45&&avg.pts>=22&&mvpScore>=100&&Math.random()<clp(.10+(mvpScore-100)*.005,.05,.60);
+const isMVP=ovr>=85&&tw>=45&&avg.pts>=22&&mvpScore>=100&&Math.random()<clp(.10+(mvpScore-100)*.008,.04,.60);
 if(isMVP)aw.push('MVP');
 if(GS.curSeason===1&&ovr>=70&&avg.pts>=10&&Math.random()<.7)aw.push('ROTY');
 const isAS=avg.pts>=18&&ovr>=82&&Math.random()<.55;
 if(isAS)aw.push('AS');
-if(isMVP||(avg.pts>=20&&ovr>=85&&tw>=42&&Math.random()<clp(isAS?0.55:.30,.20,.55)))aw.push('AN');
+if(isMVP||(avg.pts>=20&&ovr>=85&&tw>=42&&Math.random()<clp(isAS?.55:.30,.20,.55)))aw.push('AN');
 const isDPOY=(avg.stl+avg.blk)>=2.0&&ovr>=80&&tw>=32&&Math.random()<.3;
 if(isDPOY)aw.push('DPOY');
 if(poRes.isChamp){aw.push('CHAMP');if(avg.pts>=16&&Math.random()<.6)aw.push('FMVP');}
@@ -786,13 +814,10 @@ GS.playerTend[k]=Math.round(clp(GS.playerTend[k]*(1-blend)+target[k]*blend,5,99)
 
 function startNextSeason(){GS.curSeason++;GS.seasonGames=[];GS.seasonW=0;GS.seasonL=0;GS.othRecords={};NBA_TEAMS.forEach(t=>{if(t.name!==GS.curTeam.name)GS.othRecords[t.name]={wins:0,losses:0};});GS.inPO=!1;GS.poDone=!1;GS.poType='';GS.poSeries=[];GS.poResults=[];GS.trainingDone=!1;GS.contractOffers=[];GS.injLeft=0;GS.nextOpp=null;GS.nextHome=!1;GS.playInStage=1;GS.playInSeed=0;GS.playInOppSeed=0;GS.playInSorted=null;GS.poMySeed=0;GS.poConfTop8=null;const age=GS.curAge+GS.curSeason-1;GS.curAttrs=ageProg(age);GS.curOVR=calcOVR(GS.curAttrs,GS.playerPos);evolveTendencies();updateTeamOVR();refreshRole();hidePOandTrainUI();document.getElementById('game-result-area').innerHTML='';document.getElementById('game-log-tbody').innerHTML='';document.getElementById('event-log').innerHTML=`<div style="color:var(--mut);text-align:center;">新赛季开始！合同剩余 ${GS.contractYears} 年</div>`;if(checkRetire(age,GS.curOVR)){GS.retired=!0;retirePlayer();return;}updateSeasonUI();updateMatchup();updateQuickStats();}
 function hidePOandTrainUI(){document.getElementById('rs-card').style.display='';document.getElementById('po-card').style.display='none';document.getElementById('train-card').style.display='none';document.getElementById('contract-card').style.display='none';document.getElementById('se-card').style.display='none';document.getElementById('btn-nxt').style.display='';document.getElementById('btn-5').style.display='';document.getElementById('btn-20').style.display='';document.getElementById('btn-rest').style.display='';}
-function ageProg(age){const pv=GS.curAttrs||GS.baseAttrs,a={},pot=pv.potential||72;let gf;if(age<22)gf=.008;else if(age<25)gf=.015;else if(age<28)gf=.006;else if(age<30)gf=0;else if(age<32)gf=0;else if(age<34)gf=-.004;else if(age<36)gf=-.012;else if(age<38)gf=-.022;else gf=-.035;var pb=(pot-72)*.003;
-	var posBoost={finishing:{PG:0.7,SG:0.9,SF:0.9,PF:1.0,C:1.1},shooting:{PG:1.3,SG:1.3,SF:1.1,PF:0.8,C:0.5},playmaking:{PG:1.4,SG:1.1,SF:0.9,PF:0.6,C:0.4},defense:{PG:0.8,SG:0.9,SF:1.0,PF:1.2,C:1.4},athletic:{PG:0.9,SG:1.0,SF:1.0,PF:1.1,C:1.0},mental:{PG:1.0,SG:1.0,SF:1.0,PF:1.0,C:1.0}};
-	var pos=GS.playerPos;
-	ALL_ATTRS.forEach(function(k){if(k==='potential'){if(age<26)a[k]=pv[k];else if(age<30)a[k]=Math.max(25,pv[k]-(age-25)*.5);else if(age<34)a[k]=Math.max(25,pv[k]-(2.5+(age-29)*1));else a[k]=Math.max(25,pv[k]-(7+(age-33)*2));return;}let v=pv[k];v+=Math.round(v*(gf+pb)*(.4+Math.random()*.4));if(['speed','acceleration','vertical','speedWithBall','lateralQuickness','agility'].includes(k)&&age>33)v-=Math.round((age-33)*.6);if(k==='stamina'&&age>34)v-=Math.round((age-34)*.8);if(['passAccuracy','midRange','postControl','freeThrow','passIQ','shotIQ','intangibles','leadership'].includes(k)&&age>28&&age<36)v+=Math.round(Math.min(3,(age-28)*.3));const maxA=Math.min(99,80+Math.round((pot-50)*.45));a[k]=clp(v,25,maxA);});return a;}
+function ageProg(age){const pv=GS.curAttrs||GS.baseAttrs,a={},pot=pv.potential||72;let gf;if(age<22)gf=.008;else if(age<25)gf=.015;else if(age<28)gf=.006;else if(age<30)gf=0;else if(age<32)gf=0;else if(age<34)gf=-.004;else if(age<36)gf=-.012;else if(age<38)gf=-.022;else gf=-.035;const pb=(pot-72)*.003;ALL_ATTRS.forEach(k=>{if(k==='potential'){if(age<26)a[k]=pv[k];else if(age<30)a[k]=Math.max(25,pv[k]-(age-25)*.5);else if(age<34)a[k]=Math.max(25,pv[k]-(2.5+(age-29)*1));else a[k]=Math.max(25,pv[k]-(7+(age-33)*2));return;}let v=pv[k];v+=Math.round(v*(gf+pb)*(.4+Math.random()*.4));if(['speed','acceleration','vertical','speedWithBall','lateralQuickness','agility'].includes(k)&&age>33)v-=Math.round((age-33)*.6);if(k==='stamina'&&age>34)v-=Math.round((age-34)*.8);if(['passAccuracy','midRange','postControl','freeThrow','passIQ','shotIQ','intangibles','leadership'].includes(k)&&age>28&&age<36)v+=Math.round(Math.min(3,(age-28)*.3));const maxA=Math.min(99,80+Math.round((pot-50)*.45));a[k]=clp(v,25,maxA);});return a;}
 function checkRetire(age,ovr){if(age>=42)return!0;if(age>=40&&ovr<70)return Math.random()<.55;if(age>=38&&ovr<65)return Math.random()<.45;if(age>=37&&ovr<58)return Math.random()<.5;return!1;}
-function simGames(n){for(var i=0;i<n&&!GS.inPO&&!GS.poDone&&GS.seasonGames.length<82;i++){simOneGame();}}
-function simRestOfSeason(){for(var i=GS.seasonGames.length;i<82&&!GS.inPO&&!GS.poDone;i++){simOneGame();}}
+async function simGames(n){for(let i=0;i<n&&!GS.inPO&&!GS.poDone&&GS.seasonGames.length<82;i++){simOneGame();await new Promise(r=>setTimeout(r,80));}}
+async function simRestOfSeason(){await simGames(82-GS.seasonGames.length);}
 function retirePlayer(){GS.retired=!0;renderRetire();showScreen('screen-retire');}
 
 // ==================== UI ====================
@@ -802,7 +827,7 @@ function updateMatchup(){if(GS.inPO||GS.poDone)return;const gn=GS.seasonGames.le
 function renderGameResult(res,isPO){const area=document.getElementById('game-result-area'),cls=res.win?'win':'loss',ij=res.injured;if(ij){area.innerHTML=`<div class="game-result-card ${cls}"><div class="gr-result">🤕 因伤缺阵</div><div class="gr-score">球队${res.win?'获胜':'失利'}</div><div style="font-size:11px;color:var(--mut);">伤停中，未出战</div></div>`;return;}const s1=Math.round((res.win?105:95)+res.pts*.25+rng(-5,8)),s2=Math.round((res.win?95:105)+rng(-5,8)),fs=res.win?`${s1} - ${s2}`:`${s2} - ${s1}`,label=isPO?`🏆 ${GS.poType==='playin'?'附加赛':'季后赛 G'+res.playoffGame}`:res.home?'🏠 主场':'✈️ 客场';area.innerHTML=`<div class="game-result-card ${cls}"><div class="gr-result">${res.win?'🏆 胜利！':'😞 失利'}</div><div class="gr-score">${fs}</div><div style="font-size:11px;color:var(--mut);">${label} vs <img src="${teamLogo(res.opponent)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${res.opponent.name} (${res.opponent.ovr})</div><div class="game-box-score"><div><div class="bs-val">${res.pts}</div><div class="bs-label">得分</div></div><div><div class="bs-val">${res.reb}</div><div class="bs-label">篮板</div></div><div><div class="bs-val">${res.ast}</div><div class="bs-label">助攻</div></div><div><div class="bs-val">${res.stl}</div><div class="bs-label">抢断</div></div><div><div class="bs-val">${res.blk}</div><div class="bs-label">盖帽</div></div><div><div class="bs-val">${res.tov}</div><div class="bs-label">失误</div></div><div><div class="bs-val">${res.min}</div><div class="bs-label">分钟</div></div><div><div class="bs-val">${res.fgm||'-'}/${res.fga||'-'}</div><div class="bs-label">投篮</div></div><div><div class="bs-val">${res.threePM||'-'}/${res.threePA||'-'}</div><div class="bs-label">三分</div></div><div><div class="bs-val">${res.ftm||'-'}/${res.fta||'-'}</div><div class="bs-label">罚球</div></div><div><div class="bs-val">${res.fg}%</div><div class="bs-label">FG%</div></div><div><div class="bs-val">${res.tp}%</div><div class="bs-label">3P%</div></div><div><div class="bs-val">${res.ft}%</div><div class="bs-label">FT%</div></div></div></div>`;}
 function renderEvents(evs){if(!evs||!evs.length)return;const log=document.getElementById('event-log');let h='';evs.forEach(e=>{h+=`<div class="ev ev-${e.type}">${e.text}</div>`;});log.innerHTML=h+log.innerHTML;}
 function addLogEvent(text,type){const log=document.getElementById('event-log');log.innerHTML=`<div class="ev ev-${type||'event'}">${text}</div>`+log.innerHTML;}
-function updateCareerTable(){const tb=document.getElementById('career-tbody');let h='';const tags={MVP:'a-mvp',AS:'a-as',AN:'a-an',AN2:'a-an',AN3:'a-an',DPOY:'a-dp',ROTY:'a-roy',CHAMP:'a-champ',FMVP:'a-fmvp',SC:'a-sc',RBL:'a-mip',ASTL:'a-asm',STLL:'a-def',BLKL:'a-def',MIP:'a-mip',SMOY:'a-smo',ASMVP:'a-asm',DEF1:'a-def',DEF2:'a-def',ROT:'a-rot',CFMVP:'a-cfm',WCF:'a-as',MCF:'a-an'};const lbs={MVP:'MVP',AS:'AS',AN:'1T',AN2:'2T',AN3:'3T',DPOY:'DP',ROTY:'ROY',CHAMP:'🏆',FMVP:'FMVP',SC:'SC',RBL:'RB',ASTL:'AS',STLL:'ST',BLKL:'BK',MIP:'MIP',SMOY:'6M',ASMVP:'ASM',DEF1:'D1',DEF2:'D2',ROT:'RT',CFMVP:'CFM',WCF:'PW',MCF:'PM'};GS.career.forEach(s=>{const as=s.awards.map(a=>`<span class="awt ${tags[a]||''}">${lbs[a]||a}</span>`).join(''),fgm=s.stats.fgm||'-',fga=s.stats.fga||'-',tpm=s.stats.threePM||'-',tpa=s.stats.threePA||'-';h+=`<tr${((s.poRes||{}).isChamp)?' class="highlight-row"':''}><td>${s.season}</td><td>${s.team.abbr}</td><td>${s.gamesPlayed}</td><td>${s.stats.pts}</td><td>${s.stats.reb}</td><td>${s.stats.ast}</td><td>${s.stats.stl}</td><td>${s.stats.blk}</td><td>${fgm}/${fga}</td><td>${tpm}/${tpa}</td><td>${s.stats.fg}%</td><td>${s.stats.tp}%</td><td><strong>${s.ovr}</strong></td><td>${as}</td></tr>`;});tb.innerHTML=h;}
+function updateCareerTable(){const tb=document.getElementById('career-tbody');let h='';const tags={MVP:'a-mvp',AS:'a-as',AN:'a-an',AN2:'a-an',AN3:'a-an',DPOY:'a-dp',ROTY:'a-roy',CHAMP:'a-champ',FMVP:'a-fmvp',SC:'a-sc',RBL:'a-mip',ASTL:'a-asm',STLL:'a-def',BLKL:'a-def',MIP:'a-mip',SMOY:'a-smo',ASMVP:'a-asm',DEF1:'a-def',DEF2:'a-def',ROT:'a-rot',CFMVP:'a-cfm',WCF:'a-as',MCF:'a-an'};const lbs={MVP:'MVP',AS:'AS',AN:'1T',AN2:'2T',AN3:'3T',DPOY:'DP',ROTY:'ROY',CHAMP:'🏆',FMVP:'FMVP',SC:'SC',RBL:'RB',ASTL:'AS',STLL:'ST',BLKL:'BK',MIP:'MIP',SMOY:'6M',ASMVP:'ASM',DEF1:'D1',DEF2:'D2',ROT:'RT',CFMVP:'CFM',WCF:'PW',MCF:'PM'};GS.career.forEach(s=>{const as=s.awards.map(a=>`<span class="awt ${tags[a]||''}">${lbs[a]||a}</span>`).join(''),fgm=s.stats.fgm||'-',fga=s.stats.fga||'-',tpm=s.stats.threePM||'-',tpa=s.stats.threePA||'-';h+=`<tr${s.poRes?.isChamp?' class="highlight-row"':''}><td>${s.season}</td><td>${s.team.abbr}</td><td>${s.gamesPlayed}</td><td>${s.stats.pts}</td><td>${s.stats.reb}</td><td>${s.stats.ast}</td><td>${s.stats.stl}</td><td>${s.stats.blk}</td><td>${fgm}/${fga}</td><td>${tpm}/${tpa}</td><td>${s.stats.fg}%</td><td>${s.stats.tp}%</td><td><strong>${s.ovr}</strong></td><td>${as}</td></tr>`;});tb.innerHTML=h;}
 
 function renderRetire(){const c=document.getElementById('retire-content'),cr=GS.career;if(!cr.length){c.innerHTML='<p>无生涯数据</p>';return;}
 let tp=0,tr=0,ta=0,tsr=0,tb=0,tg=0,tinj=0,tAS=0,tMVP=0,tC=0,tAN=0,tDP=0,tROY=0,tFMVP=0,tSC=0,tRBL=0,tASTL=0,tSTLL=0,tBLKL=0,tMIP=0,tSMOY=0,tDEF=0,tAN2=0,tAN3=0,po=0,ps=1,bp=0,bs=1,br=0,bsr=1,ba=0,bsa=1,bst=0,bss=1,bb=0,bsb=1,allAwards=[];
@@ -810,7 +835,7 @@ cr.forEach(s=>{const gp=s.gamesPlayed;tp+=s.stats.pts*gp;tr+=s.stats.reb*gp;ta+=
 const ss=cr.length,ap=tg>0?Math.round(tp/tg*10)/10:0,ar=tg>0?Math.round(tr/tg*10)/10:0,aa=tg>0?Math.round(ta/tg*10)/10:0;
 const hs=tAS*2+tAN*3+tAN2*2+tAN3*1+tMVP*8+tC*5+tDP*3+tROY*1+tFMVP*4+tSC*2+(ap>20?3:ap>15?1:0),hof=hs>=8;
 const jerseyNum=hs>=20,statue=hs>=30;
-const tms=cr.map(function(s){return s.team.name;}).filter(function(v,i,a){return a.indexOf(v)===i;}),age=cr[cr.length-1].age;
+const tms=[...new Set(cr.map(s=>s.team.name))],age=cr[cr.length-1].age;
 // Find matching legend
 let cmp='';let bestMatch=null,bestScore=999;
 P.forEach(p=>{let sc=0;sc+=Math.abs((p._ovr+Math.round(ap))/2-ap)*.3;sc+=Math.abs((tMVP>0?tMVP:0)-(p.name.includes('Jordan')?5:p.name.includes('LeBron')?3:0))*2;sc+=Math.abs((tC>0?tC:0)-(p.name.includes('Jordan')?6:p.name.includes('Kobe')?5:p.name.includes('Shaq')?4:p.name.includes('Magic')?5:0))*2;if(p.pos===GS.playerPos)sc-=1;if(ss<5&&p.era==='legend')sc+=3;if(sc<bestScore){bestScore=sc;bestMatch=p;}});
@@ -818,11 +843,11 @@ if(bestMatch&&bestScore<12)cmp='你的生涯与 <b style=\"color:var(--gld);\">'
 else cmp='你是独一无二的存在——没有任何模板能定义你的伟大。你的生涯轨迹，将被后人作为新的标尺。';
 // Epic story with career diversity
 let story='';let intro='',climax='',legacy='';
-const teams=cr.map(function(s){return s.team.name;}).filter(function(v,i,a){return a.indexOf(v)===i;});const oneTeam=teams.length===1;const manyTeams=teams.length>=4;
-const peak=cr.reduce((b,s)=>((s.poRes||{}).isChamp)?s.season:b,0);
-const dynasty=cr.filter(s=>((s.poRes||{}).isChamp)).length>=3&&tC>=3;
-const lateRing=cr.filter(s=>((s.poRes||{}).isChamp)&&s.age>=33).length>0;
-const comeback=cr.some((s,i)=>i>0&&!((cr[i-1].poRes||{}).madePlayoffs)&&((s.poRes||{}).isChamp));
+const teams=[...new Set(cr.map(s=>s.team.name))];const oneTeam=teams.length===1;const manyTeams=teams.length>=4;
+const peak=cr.reduce((b,s)=>s.poRes?.isChamp?s.season:b,0);
+const dynasty=cr.filter(s=>s.poRes?.isChamp).length>=3&&tC>=3;
+const lateRing=cr.filter(s=>s.poRes?.isChamp&&s.age>=33).length>0;
+const comeback=cr.some((s,i)=>i>0&&!cr[i-1].poRes?.madePlayoffs&&s.poRes?.isChamp);
 // Intro
 if(ss<=2){intro='如流星般短暂却无比耀眼——你的NBA生涯虽只有'+ss+'个赛季，却在那有限的时光里燃烧了全部光芒。';if(tC>0)intro+=' 更令人惊叹的是，你竟在如此短暂的征途中捧起了奥布莱恩杯！';}
 else if(ss<=5){intro=''+ss+'个赛季的拼搏，你用汗水和决心在篮球世界刻下了属于自己的名字。';if(dynasty)intro+=' 不可思议的是，在短短几年间你缔造了一个王朝！';}
@@ -874,10 +899,10 @@ const content=document.getElementById('tab-content');
 if(tab==='standings'){
 const played=GS.seasonGames.length;if(played===0){content.innerHTML='<p style="color:var(--mut);text-align:center;padding:20px;">赛季尚未开始，暂无战绩数据</p>';return;}
 const recs={};recs[GS.curTeam.name]={wins:GS.seasonW,losses:GS.seasonL};Object.entries(GS.othRecords).forEach(([n,r])=>{recs[n]=r;});
-const wSort=WEST.concat().sort((a,b)=>(((recs[b.name]||{}).wins)||0)-(((recs[a.name]||{}).wins)||0)),eSort=EAST.concat().sort((a,b)=>(((recs[b.name]||{}).wins)||0)-(((recs[a.name]||{}).wins)||0));
+const wSort=[...WEST].sort((a,b)=>(recs[b.name]?.wins||0)-(recs[a.name]?.wins||0)),eSort=[...EAST].sort((a,b)=>(recs[b.name]?.wins||0)-(recs[a.name]?.wins||0));
 let h=`<table class="std-table"><thead><tr><th>#</th><th>球队</th><th>OVR</th><th>胜</th><th>负</th><th>胜率</th><th>GB</th></tr></thead><tbody>`;
-h+=`<tr class="conf-hdr"><td colspan="7">🏀 西部联盟</td></tr>`;const wl=((recs[wSort[0].name]||{}).wins)||0;wSort.forEach((t,i)=>{const r=recs[t.name]||{wins:0,losses:0},gb=wl-r.wins;h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td>${i+1}</td><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.name}</td><td>${t.ovr}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.wins+r.losses>0?(r.wins/(r.wins+r.losses)*100).toFixed(1):'.0'}%</td><td>${gb>0?gb:'-'}</td></tr>`;});
-h+=`<tr class="conf-hdr"><td colspan="7">🏀 东部联盟</td></tr>`;const el=((recs[eSort[0].name]||{}).wins)||0;eSort.forEach((t,i)=>{const r=recs[t.name]||{wins:0,losses:0},gb=el-r.wins;h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td>${i+1}</td><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.name}</td><td>${t.ovr}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.wins+r.losses>0?(r.wins/(r.wins+r.losses)*100).toFixed(1):'.0'}%</td><td>${gb>0?gb:'-'}</td></tr>`;});
+h+=`<tr class="conf-hdr"><td colspan="7">🏀 西部联盟</td></tr>`;const wl=recs[wSort[0].name]?.wins||0;wSort.forEach((t,i)=>{const r=recs[t.name]||{wins:0,losses:0},gb=wl-r.wins;h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td>${i+1}</td><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.name}</td><td>${t.ovr}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.wins+r.losses>0?(r.wins/(r.wins+r.losses)*100).toFixed(1):'.0'}%</td><td>${gb>0?gb:'-'}</td></tr>`;});
+h+=`<tr class="conf-hdr"><td colspan="7">🏀 东部联盟</td></tr>`;const el=recs[eSort[0].name]?.wins||0;eSort.forEach((t,i)=>{const r=recs[t.name]||{wins:0,losses:0},gb=el-r.wins;h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td>${i+1}</td><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.name}</td><td>${t.ovr}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.wins+r.losses>0?(r.wins/(r.wins+r.losses)*100).toFixed(1):'.0'}%</td><td>${gb>0?gb:'-'}</td></tr>`;});
 h+=`</tbody></table>`;content.innerHTML=h;
 }else if(tab==='rosters'){
 let h=`<table class="std-table"><thead><tr><th>球队</th><th>OVR</th><th>核心阵容</th></tr></thead><tbody>`;h+=`<tr class="conf-hdr"><td colspan="3">西部联盟</td></tr>`;WEST.forEach(t=>{h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.emoji} ${t.name}</td><td>${t.ovr}</td><td style="text-align:left;font-size:10px;color:var(--mut);">${t.roster.join(' · ')}</td></tr>`;});h+=`<tr class="conf-hdr"><td colspan="3">东部联盟</td></tr>`;EAST.forEach(t=>{h+=`<tr${t.name===GS.curTeam.name?' class="my-row"':''}><td style="text-align:left;"><img src="${teamLogo(t)}" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;" onerror="this.style.display='none';"> ${t.emoji} ${t.name}</td><td>${t.ovr}</td><td style="text-align:left;font-size:10px;color:var(--mut);">${t.roster.join(' · ')}</td></tr>`;});h+=`</tbody></table>`;content.innerHTML=h;
